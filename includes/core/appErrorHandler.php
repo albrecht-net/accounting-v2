@@ -7,13 +7,13 @@ if (!defined('ROOT_PATH')) {
 ini_set('display_errors', false);
 
 // Overwrite error_log from php.ini if path for log is given by in the config
-if (!empty(config::get('error.log_path'))) {
-    ini_set('error_log', config::get('error.log_path'));
+if (!empty(config::get('log.path'))) {
+    ini_set('error_log', config::get('log.path'));
 }
 
 // Overwrite error_reporting from php.ini if error_reporting level is given by in the config
-if (!empty(config::get('error.app_reporting'))) {
-    ini_set('error_reporting', intval(config::get('error.app_reporting')));
+if (!empty(config::get('log.level'))) {
+    ini_set('error_reporting', intval(config::get('log.level')));
 }
 
 /**

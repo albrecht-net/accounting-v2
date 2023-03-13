@@ -1,8 +1,13 @@
 <?php /*** WEB-APPLICATION CONFIG ***/
 return array (
+    // Database
     'dbHost' => '',
     'dbPort' => '',
     'dbUsername' => '',
     'dbPassword' => '',
     'dbName' => '',
+
+    // Logging
+    'log.path' => '',
+    'log.level' => E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE,
 );
