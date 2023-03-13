@@ -1,0 +1,8 @@
+<?php /*** WEB-APPLICATION CONFIG ***/
+return array (
+    'dbHost' => '',
+    'dbPort' => '',
+    'dbUsername' => '',
+    'dbPassword' => '',
+    'dbName' => '',
+);

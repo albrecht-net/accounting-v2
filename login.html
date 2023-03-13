@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="stylesheet" href="./assets/styles/style.css" />
+    <!-- <script src="my-js-file.js" defer></script> -->
+    <title>Login</title>
+</head>
+<body>
+    <section>
+        <h2>Login</h2>
+        <form action="./api/user/login.php" id="form-login">
+            <div class="form-input">
+                <input type="text" name="in-text-username" id="in-text-username" placeholder="Benutzername">
+            </div>
+            <div class="form-input">
+                <input type="password" name="in-password-password" id="in-password-password" placeholder="Passwort">
+            </div>
+            <div class="form-input">
+                <input type="checkbox" name="chk-remeber" id="chk-remeber">
+                <label for="chk-remeber">Angemeldet bleiben</label>
+            </div>
+            <input type="submit" value="Login">
+        </form>
+    </section>
+</body>
+
+<script src="includes/js/form-handler.js"></script>
+
+<script>
+    sendFormData("form-login");
+</script>
+
+</html>

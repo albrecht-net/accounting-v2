@@ -1,0 +1,28 @@
+body {
+    font-family: sans-serif;
+}
+
+section {
+    border: 0.1rem solid black;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+section h2 {
+    margin-top: 0;
+}
+
+form {
+    display: table;
+}
+
+div.form-input {
+    display: table-row;
+}
+
+label,
+input,
+select {
+    display: table-cell;
+    margin-bottom: 0.25rem;
+}

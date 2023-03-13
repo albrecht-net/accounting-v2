@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="stylesheet" href="./assets/styles/style.css" />
+    <!-- <script src="my-js-file.js" defer></script> -->
+    <title>Buchung erfassen</title>
+</head>
+
+<body>
+    <section>
+        <h2>Neue Buchung erfassen</h2>
+        <form>
+            <div class="form-input">
+                <label for="input-date">Buchungsdatum</label>
+                <input type="date" id="input-date">
+            </div>
+            <div class="form-input">
+                <label for="select-period">Periode</label>
+                <select id="select-period"></select>
+            </div>
+            <div class="form-input">
+                <label for="select-recepient">Empfänger</label>
+                <select id="select-recepient"></select>
+            </div>
+            <div class="form-input">
+                <label for="input-invoice-no">Rechnungsnummer</label>
+                <input type="text" id="input-invoice-no">
+            </div>
+            <div class="form-input">
+                <label for="input-description">Beschreibung</label>
+                <input type="text" id="input-description">
+            </div>
+            <div class="form-input">
+                <label for="select-account-debit">Konto Soll</label>
+                <select id="select-account-debit"></select>
+            </div>
+            <div class="form-input">
+                <label for="select-account-credit">Konto Haben</label>
+                <select id="select-account-credit"></select>
+            </div>
+            <div class="form-input">
+                <label for="input-total">Betrag</label>
+                <input type="number" id="input-total">
+            </div>
+            <div class="form-input">
+                <label for="select-classification-1">Klassifikation 1</label>
+                <select id="select-classification-1"></select>
+            </div>
+            <div class="form-input">
+                <label for="select-classification-2">Klassifikation 2</label>
+                <select id="select-classification-2"></select>
+            </div>
+            <div class="form-input">
+                <label for="select-classification-3">Klassifikation 3</label>
+                <select id="select-classification-3"></select>
+            </div>
+            <input type="submit" value="Speichern">
+        </form>
+    </section>
+    <section>
+        <h2>Daueraufträge</h2>
+    </section>
+</body>
+
+</html>
