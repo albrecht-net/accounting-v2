@@ -11,6 +11,7 @@ $access_control_allow_methods = array('POST');
 if(!in_array($_SERVER['REQUEST_METHOD'], $access_control_allow_methods)) {
     http_response_code(405);
     header('Allow: ' . implode(', ', $access_control_allow_methods));
+    exit();
 }
 
 
