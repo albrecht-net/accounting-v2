@@ -26,31 +26,31 @@ if (!empty(config::get('log.level'))) {
  * @param int $errline contains the line number the error was raised at, as an integer.
  * @return bool Return false if error code is not included in error_reporting, so it use the standard PHP error handler. For other error codes return true.
  */
-function appErrorHandler($errno, $errstr, $errfile, $errline) {
+function app_error_handler($errno, $errstr, $errfile, $errline) {
     if (!(error_reporting() & $errno)) {
         return false;
     }
 
     switch ($errno) {
         case E_USER_ERROR:
-            $_errnostr = 'PHP Fatal error';
+            $errno_desc = 'PHP Fatal error';
             break;
 
         case E_USER_WARNING:
-            $_errnostr = 'PHP Warning';
+            $errno_desc = 'PHP Warning';
             break;
 
         case E_USER_NOTICE:
-            $_errnostr = 'PHP Notice';
+            $errno_desc = 'PHP Notice';
             break;
 
         default:
-            $_errnostr = $errno;
+            $errno_desc = $errno;
             break;
     }
 
     // Format error message string
-    $msg = $_errnostr . ':  ' . $errstr;
+    $msg = $errno_desc . ':  ' . $errstr;
 
     error_log($msg, 0);
     echo $msg;
@@ -59,4 +59,4 @@ function appErrorHandler($errno, $errstr, $errfile, $errline) {
 }
 
 // Set error custom handler for errors with a sverity of 'E_USER_ERROR', 'E_USER_WARNING' and 'E_USER_NOTICE'
-set_error_handler('appErrorHandler', E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE);
+set_error_handler('app_error_handler', E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE);
