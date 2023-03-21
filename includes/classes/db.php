@@ -28,7 +28,7 @@ class db {
     /**
      * Constructor
      * 
-     * @param integer $type 1: Systemdatabase with credentials from config. 2: Userdatabase with credentials from systemdatabase.
+     * @param int $type 1: Systemdatabase with credentials from config. 2: Userdatabase with credentials from systemdatabase.
      * @return bool Return true if connection to selected database was successfull otherwise false.
      */
     private function __construct($type) {
@@ -62,7 +62,7 @@ class db {
         $this->_mysqli = new mysqli(config::get('db.host') . ':' . config::get('db.port'), config::get('db.username'), config::get('db.password'), config::get('db.name'));
 
         if ($this->validate_connection() !== 2) {
-            trigger_error('Cannot connect to system database. Check config.php. (' . mysqli_connect_errno() . ') ' . mysqli_connect_error(), E_USER_ERROR);
+            trigger_error('Cannot connect to system database, check config.php. MySQL said: #' . mysqli_connect_errno() . ' - ' . mysqli_connect_error(), E_USER_ERROR);
             return false;
         }
 
@@ -104,10 +104,10 @@ class db {
      * Entrypoint for every mysql connection.
      * When the selected database is called up for the first time, a new instance will get created.
      * 
-     * @param integer $type 1: Systemdatabase with credentials from config. 2: Userdatabase with credentials from systemdatabase.
-     * @return object|null Return the instantiated object of the choosen database.
+     * @param int $type 1: Systemdatabase with credentials from config. 2: Userdatabase with credentials from systemdatabase.
+     * @return object|void Return the instantiated object of the choosen database.
      */
-    public static function init(integer $type) {
+    public static function init(int $type) {
         if ($type === 1) {
             if (!isset(self::$_instance_sys_link)) {
                 self::$_instance_sys_link = new self(1);
@@ -182,7 +182,7 @@ class db {
     /**
      * Return a result object with the pointer set to the field given by the offset.
      * 
-     * @param integer $offset Adjusts the result pointer to an row in the result.
+     * @param int $offset Adjusts the result pointer to an row in the result.
      * @return object|bool Return result object on success or false if given offset was invalid.
      */
     public function result($offset = 0) {
@@ -215,7 +215,7 @@ class db {
     /**
      * Gets the number of rows in a result.
      * 
-     * @return integer Number of rows in the result set.
+     * @return int Number of rows in the result set.
      */
     public function count() {
         return $this->result()->num_rows;
