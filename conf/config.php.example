@@ -1,11 +1,11 @@
 <?php /*** WEB-APPLICATION CONFIG ***/
 return array (
     // Database
-    'dbHost' => '',
-    'dbPort' => '',
-    'dbUsername' => '',
-    'dbPassword' => '',
-    'dbName' => '',
+    'db.host' => '',
+    'db.port' => '',
+    'db.username' => '',
+    'db.password' => '',
+    'db.name' => '',
 
     // Logging
     'log.path' => '',

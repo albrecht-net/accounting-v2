@@ -59,7 +59,7 @@ class db {
      * @return bool Return true if connection to database was successfull otherwise false.
      */
     private function _connect_sys_db() {
-        $this->_mysqli = new mysqli(config::get('dbHost') . ':' . config::get('dbPort'), config::get('dbUsername'), config::get('dbPassword'), config::get('dbName'));
+        $this->_mysqli = new mysqli(config::get('db.host') . ':' . config::get('db.port'), config::get('db.username'), config::get('db.password'), config::get('db.name'));
 
         if ($this->validate_connection() !== 2) {
             trigger_error('Cannot connect to system database. Check config.php. (' . mysqli_connect_errno() . ') ' . mysqli_connect_error(), E_USER_ERROR);
@@ -107,7 +107,7 @@ class db {
      * @param integer $type 1: Systemdatabase with credentials from config. 2: Userdatabase with credentials from systemdatabase.
      * @return object|null Return the instantiated object of the choosen database.
      */
-    public static function init($type) {
+    public static function init(integer $type) {
         if ($type === 1) {
             if (!isset(self::$_instance_sys_link)) {
                 self::$_instance_sys_link = new self(1);
