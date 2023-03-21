@@ -1,103 +1,63 @@
 <?php
 class db {
     /**
-     * @var object $_instance_sys_link Object of the instantiated class for the systemdatabase.
+     * @var object $_instance_sys_link Object of the instantiated class for the system database.
      */
     private static $_instance_sys_link = null;
 
     /**
-     * @var object $_instance_usr_link Object of the instantiated class for the userdatabase.
+     * @var object $_instance_usr_link Object of the instantiated class for the user database.
      */
     private static $_instance_usr_link = null;
 
     /**
-     * @var object $_mysqli MySQL server connection.
+     * @var object $_mysqli Object which represents the connection to the MySQL Server.
      */
     private $_mysqli;
 
-    /**
-     * @var string $_query SQL query from current query.
-     */
-    private $_query;
+    public int $errno;
 
-    /**
-     * @var object $_result SQL result object.
-     */
-    private $_result;
+    public $_stmt;
+
+    public $_result;
 
     /**
      * Constructor
      * 
-     * @param int $type 1: Systemdatabase with credentials from config. 2: Userdatabase with credentials from systemdatabase.
-     * @return bool Return true if connection to selected database was successfull otherwise false.
+     * @param integer $type 1: Systemdatabase with credentials from config. 2: Userdatabase with credentials from systemdatabase.
+     * @return void No value is returned
      */
     private function __construct($type) {
         switch ($type) {
             case 1:
-                if (!$this->_connect_sys_db()) {
-                    return false;
-                } else {
-                    return true;
-                }
-
+                $this->_connect_sys_db();
+                break;
             case 2:
-                if (!$this->_connect_usr_db()) {
-                    return false;
-                } else {
-                    return true;
-                }
-            
-            default:
-                return false;
+                $this->_connect_usr_db();
+                break;
         }
+
+        return;
     }
 
     /**
      * Open a new connection to the MySQL server for systemdatabase.
      * For the database credentials the entries from the config will be used.
      * 
-     * @return bool Return true if connection to database was successfull otherwise false.
+     * @return void No value is returned
      */
     private function _connect_sys_db() {
         $this->_mysqli = new mysqli(config::get('db.host') . ':' . config::get('db.port'), config::get('db.username'), config::get('db.password'), config::get('db.name'));
+        $this->errno = $this->_mysqli->connect_errno;
 
-        if ($this->validate_connection() !== 2) {
+        if ($this->_mysqli->connect_errno) {
             trigger_error('Cannot connect to system database, check config.php. MySQL said: #' . mysqli_connect_errno() . ' - ' . mysqli_connect_error(), E_USER_ERROR);
-            return false;
+            return;
         }
 
-        // Connection established
-        return true;
-    }
+        $this->_stmt = $this->_mysqli->stmt_init();
 
-    /**
-     * Open a new connection to the MySQL server for userdatabase.
-     * For the database credentials the userID and dbID stored in the session will be used. userDbSet must be true in the session otherwise it return false.
-     * 
-     * @return bool Return true if connection to database was successfull otherwise false.
-     */
-    private function _connect_usr_db() {
-        if (session::get('userDbSet')) {
-            $sqlquery = "SELECT dbHost, dbPort, dbUsername, dbPassword, dbName FROM `databases` WHERE dbID = " . intval(session::get('userDbID')) . " AND userID = " . intval(session::get('userID'));
-            
-            if (self::$_instance_sys_link->query($sqlquery)) {
-                if (self::$_instance_sys_link->count() == 1) {
-                    $result = self::$_instance_sys_link->first();
-                    $this->_mysqli = new mysqli($result['dbHost'], $result['dbUsername'], $result['dbPassword'], $result['dbName'], $result['dbPort']);
-
-                    if ($this->validate_connection() !== 2) {
-                        trigger_error('Cannot connect to user database with ID (' . intval(session::get('userDbID')) . ')', E_USER_WARNING);
-                        return false;
-                    }
-
-                    // Connection established
-                    return true;
-                }
-            } 
-        }
-
-        // Return false if userdatabase not set, query for database selection failed, no database found or settings where invalid
-        return false;
+        return;
     }
 
     /**
@@ -126,120 +86,10 @@ class db {
         return;
     }
 
-    /**
-     * Validate if a connection to the mysql server is established
-     * 
-     * @return int Return 0: if no mysqli instance found, 1: Connection failed, 2: Connection established
-     */
-    public function validate_connection() {
-        if ($this->_mysqli !== null) {
-            if ($this->_mysqli->connect_error !== null) {
-                // Connection failed
-                return 1;
-            } else {
-                // Connection established
-                return 2;
-            };
-        }
-
-        // No mysqli instance found. Only possible while using usrDB.
-        return 0;
+    public function run_query() {
+        $this->_stmt->execute();
+        $this->errno = $this->_stmt->errno;
+        $this->_result = $this->_stmt->get_result();
     }
 
-    /**
-     * Escapes special characters in a string for use in an SQL statement.
-     * 
-     * @param string $escapestr The string to be escaped.
-     * @return string Returns an escaped string.
-     */
-    public function escape_string($escapestr) {
-            return $this->_mysqli->real_escape_string($escapestr);
-    }
-
-    /**
-     * Execute an SQL query and store (if a result set is given) the result for further use.
-     * 
-     * @param string $sqlquery The query as a string.
-     * @return bool Returns true on success or false on failure.
-     */
-    public function query($sqlquery) {
-        $this->_query = $sqlquery;
-
-        if ($this->_mysqli->real_query($this->_query)) {
-            if ($this->_mysqli->field_count > 0) {
-                $this->_result = $this->_mysqli->store_result();
-            }
-            return true;
-        } else {
-            // MySql Error
-            return false;
-        }
-
-        // Error, systemdatabase not connected
-        return $this;
-    }
-
-    /**
-     * Return a result object with the pointer set to the field given by the offset.
-     * 
-     * @param int $offset Adjusts the result pointer to an row in the result.
-     * @return object|bool Return result object on success or false if given offset was invalid.
-     */
-    public function result($offset = 0) {
-        if ($this->_result->data_seek($offset)) {
-            return $this->_result;
-        }
-
-        // Offset invalid
-        return false;
-    }
-
-    /**
-     * Fetches all result rows as an associative array, a numeric array, or both.
-     * 
-     * @return array Result as array.
-     */
-    public function fetch_array() {
-        return $this->result()->fetch_all(MYSQLI_ASSOC);
-    }
-
-    /**
-     * Fetches the first result row as an associative array.
-     * 
-     * @return array Result as array.
-     */
-    public function first() {
-        return $this->fetch_array()[0];
-    }
-
-    /**
-     * Gets the number of rows in a result.
-     * 
-     * @return int Number of rows in the result set.
-     */
-    public function count() {
-        return $this->result()->num_rows;
-    }
-
-    /**
-     * Returns a list of errors from the last command executed.
-     * 
-     * @return array A list of errors, each as an associative array containing the errno, error, and sqlstate.
-     */
-    public function error() {
-        return $this->_mysqli->error_list;
-    }
-
-    /**
-     * Frees the memory associated with a result.
-     * 
-     * @return No value is returned.
-     */
-    public function free() {
-        return $this->_result->free_result();
-    }
-
-    public function close() {
-        return $this->_mysqli->close();
-    }
 }
