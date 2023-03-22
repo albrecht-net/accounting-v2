@@ -53,7 +53,6 @@ function app_error_handler($errno, $errstr, $errfile, $errline) {
     $msg = $errno_desc . ':  ' . $errstr;
 
     error_log($msg, 0);
-    echo $msg;
 
     return true;
 }
