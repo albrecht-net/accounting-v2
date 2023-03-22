@@ -24,6 +24,4 @@ spl_autoload_register(function ($class_name) {
     }
 });
 
-// session::start();
-
 require_once ROOT_PATH .'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'appErrorHandler.php';
