@@ -112,7 +112,7 @@ class db {
             return;
         }
 
-        if (!self::$_instance_sys_link->count() != 1) {
+        if (self::$_instance_sys_link->count() != 1) {
             trigger_error('Cancel connection to user database. No user database credentials found for User #' . $user_id);
             return;
         }
