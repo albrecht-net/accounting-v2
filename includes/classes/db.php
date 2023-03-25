@@ -21,7 +21,7 @@ class db {
     private $_mysqli;
     
     private $_stmt;
-    public $_result;
+    private $_result;
 
     /**
      * @var int $errno Error code for the most recent function call
@@ -37,26 +37,16 @@ class db {
     /**
      * Constructor
      * 
-     * @param int $type 1: System database with credentials from config. 2: User database with credentials from system database.
-     * @param int $user_id: Set userID to query credentials for user database (optional, only required for connection to user database).
+     * @param int $mode 0: System database with credentials from config. Otherwise user_id (int != 0) for user database with credentials from system database.
      * @return void No value is returned
      */
-    private function __construct(int $type, int $user_id = null) {
-        switch ($type) {
-            case 1:
-                $this->_connect_sys_db();
-                break;
-            case 2:
-                if ($user_id === null) {
-                    break;
-                }
-                $this->_user_id = $user_id;
-
-                $this->_connect_usr_db($user_id);
-                break;
+    private function __construct(int $mode) {
+        if ($mode === 0) {
+            $this->_connect_sys_db();
+        } else {
+            $this->_user_id = $mode;
+            $this->_connect_usr_db($mode);
         }
-
-        return;
     }
 
     /**
@@ -87,7 +77,7 @@ class db {
      * @return void No value is returned
      */
     private function _connect_usr_db(int $user_id) {
-        if (!self::$_instance_sys_link->prepare("SELECT db_host, db_port, db_username, db_password, db_name FROM databases WHERE user_id=? LIMIT 1")) {
+        if (!self::$_instance_sys_link->prepare("SELECT db_host, db_port, db_username, db_password, db_name FROM `databases` WHERE user_id=? LIMIT 1")) {
             return;
         }
 
@@ -99,7 +89,11 @@ class db {
             return;
         }
 
-        $result = self::$_instanceSysLink->fetch_array();
+        if (!self::$_instance_sys_link->count() != 1) {
+            trigger_error('Cancel connection to user database. No user database credentials found for User #' . $user_id);
+            return;
+        }
+        $result = self::$_instance_sys_link->fetch_array()[0];
         $this->_mysqli = new mysqli($result['db_host'], $result['db_username'], $result['db_password'], $result['db_name'], $result['db_port']);
         $this->errno = $this->_mysqli->connect_errno;
 
@@ -117,27 +111,24 @@ class db {
      * Entrypoint for every mysql connection.
      * When the selected database is called up for the first time, a new instance will get created.
      * 
-     * @param int $type 1: System database with credentials from config. 2: User database with credentials from system database.
-     * @param int $user_id: Set userID to query credentials for user database (optional, only required for connection to user database).
-     * @return object|void Return the instantiated object of the choosen database or if invalid $type was given no value.
+     * @param int $mode 0: System database with credentials from config. Otherwise user_id (int != 0) for user database with credentials from system database.
+     * @return object Return the instantiated object of the choosen database.
      */
-    public static function init(int $type, int $user_id = null) {
-        if ($type === 1) {
+    public static function init(int $mode = 0) {
+        if ($mode === 0) {
             if (!isset(self::$_instance_sys_link)) {
-                self::$_instance_sys_link = new self(1);
+                self::$_instance_sys_link = new self(0);
             }
             return self::$_instance_sys_link;
-        } elseif ($type === 2) {
+        } else {
             if (!isset(self::$_instance_sys_link)) {
-                self::$_instance_sys_link = new self(1);
+                self::$_instance_sys_link = new self(0);
             }
-            if (!isset(self::$_instance_usr_link) | self::$_instance_usr_link !== $user_id) {
-                self::$_instance_usr_link = new self(2, $user_id);
+            if (!isset(self::$_instance_usr_link) | self::$_instance_usr_link->_user_id !== $mode) {
+                self::$_instance_usr_link = new self($mode);
             }
             return self::$_instance_usr_link;
         }
-
-        return;
     }
 
     /**
