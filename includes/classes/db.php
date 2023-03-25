@@ -33,6 +33,29 @@ class db {
      */
     public $error;
 
+    /**
+     * Entrypoint for every mysql connection.
+     * When the selected database is called up for the first time, a new instance will get created.
+     * 
+     * @param int $mode 0: System database with credentials from config. Otherwise user_id (int != 0) for user database with credentials from system database.
+     * @return object Return the instantiated object of the choosen database.
+     */
+    public static function init(int $mode = 0) {
+        if ($mode === 0) {
+            if (!isset(self::$_instance_sys_link)) {
+                self::$_instance_sys_link = new self(0);
+            }
+            return self::$_instance_sys_link;
+        } else {
+            if (!isset(self::$_instance_sys_link)) {
+                self::$_instance_sys_link = new self(0);
+            }
+            if (!isset(self::$_instance_usr_link) | self::$_instance_usr_link->_user_id !== $mode) {
+                self::$_instance_usr_link = new self($mode);
+            }
+            return self::$_instance_usr_link;
+        }
+    }
 
     /**
      * Constructor
@@ -105,30 +128,6 @@ class db {
         $this->_stmt = $this->_mysqli->stmt_init();
 
         return;
-    }
-
-    /**
-     * Entrypoint for every mysql connection.
-     * When the selected database is called up for the first time, a new instance will get created.
-     * 
-     * @param int $mode 0: System database with credentials from config. Otherwise user_id (int != 0) for user database with credentials from system database.
-     * @return object Return the instantiated object of the choosen database.
-     */
-    public static function init(int $mode = 0) {
-        if ($mode === 0) {
-            if (!isset(self::$_instance_sys_link)) {
-                self::$_instance_sys_link = new self(0);
-            }
-            return self::$_instance_sys_link;
-        } else {
-            if (!isset(self::$_instance_sys_link)) {
-                self::$_instance_sys_link = new self(0);
-            }
-            if (!isset(self::$_instance_usr_link) | self::$_instance_usr_link->_user_id !== $mode) {
-                self::$_instance_usr_link = new self($mode);
-            }
-            return self::$_instance_usr_link;
-        }
     }
 
     /**
