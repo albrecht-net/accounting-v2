@@ -25,3 +25,10 @@ spl_autoload_register(function ($class_name) {
 });
 
 require_once ROOT_PATH .'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'appErrorHandler.php';
+
+// Verify if requested method is in allowed ones
+if(!in_array($_SERVER['REQUEST_METHOD'], ACCESS_CONTROL_ALLOW_METHODS)) {
+    http_response_code(405);
+    header('Allow: ' . implode(', ', ACCESS_CONTROL_ALLOW_METHODS));
+    exit();
+}
