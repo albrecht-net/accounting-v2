@@ -137,7 +137,12 @@ class db {
      * @return bool Returns true on success or false on failure.
      */
     public function prepare(string $query) {
-        return $this->_stmt->prepare($query);
+        if (!$this->_stmt->prepare($query)) {
+            $this->errno = $this->_stmt->errno;
+            $this->error = $this->_stmt->error;
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -149,7 +154,12 @@ class db {
      * @return bool Returns true on success or false on failure.
      */
     public function bind_param(string $types, &$var, &...$vars) {
-        return $this->_stmt->bind_param($types, $var, ...$vars);
+        if (!$this->_stmt->bind_param($types, $var, ...$vars)) {
+            $this->errno = $this->_stmt->errno;
+            $this->error = $this->_stmt->error;
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -159,9 +169,14 @@ class db {
      */
     public function run_query() {
         if (!$this->_stmt->execute()) {
+            $this->errno = $this->_stmt->errno;
+            $this->error = $this->_stmt->error;
             return false;
         }
-        if (!$this->_result = $this->_stmt->get_result()) {
+        $this->_result = $this->_stmt->get_result();
+        if ($this->_stmt->errno != 0) {
+            $this->errno = $this->_stmt->errno;
+            $this->error = $this->_stmt->error;
             return false;
         }
         return true;
