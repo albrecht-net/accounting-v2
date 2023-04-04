@@ -52,13 +52,32 @@ if (!password_verify($request_data['password'], db::init()->fetch_one()['passwor
     exit;
 }
 
+// Cookie parameters
+$arr_cookie_options = array(
+    'path' => urlencode(ROOT_PATH),
+    'secure' => true,
+    'httponly' => true,
+    'samesite' => 'strict'
+);
+
+$time_now = time();
+
 // Set expire by date
 if ($request_data['remember']) {
-    $expire_timestamp = time() + config::get('session.max_lifetime');
+    $time_expire = $time_now + config::get('session.max_lifetime');
+
+    // Set cookie expire timestamp
+    $arr_cookie_options['expires'] = $time_expire;
 } else {
-    $expire_timestamp = time() + config::get('session.inactive_time');
+    $time_expire = $time_now + config::get('session.inactive_time');
+
+    // Set cookie expire timestamp
+    $arr_cookie_options['expires'] = 0;
 }
-$expire_timestring = date('Y-m-d H:i:s', $expire_timestamp);
+
+// Format timestampt to string for database
+$time_expire_string = date('Y-m-d H:i:s', $time_expire);
+$time_now_string = date('Y-m-d H:i:s', $time_now);
 
 // Generate session id
 $sid = bin2hex(random_bytes(32));
@@ -67,13 +86,13 @@ $sid = bin2hex(random_bytes(32));
 $user_agent = explode(" ", $_SERVER['HTTP_USER_AGENT'], 2)[0];
 
 // Insert new row to sessions table
-if (!db::init()->prepare("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`) VALUES (?, ?, ?, ?, ?)")) {
+if (!db::init()->prepare("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, ?, ?)")) {
     trigger_error("MySQL Error occoured: ");
     http_response_code(500);
     exit;
 }
 
-if (!db::init()->bind_param("sisss", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $expire_timestring)) {
+if (!db::init()->bind_param("sissss", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire_string, $time_now_string)) {
     trigger_error("MySQL Error occoured: ");
     http_response_code(500);
     exit;
@@ -85,15 +104,11 @@ if (!db::init()->run_query()) {
     exit;
 }
 
+// Send cookie with additional parameters
+setcookie('sid', $sid, $arr_cookie_options);
 
 $response = array(
-    'success' => true,
-    'message' => array(
-        'messageBarType' => null,
-        'messageBarDismisible' => null,
-        'messageTitle' => null
-    ),
-    'data' => null
+    'success' => true
 );
 
 echo json_encode($response);
