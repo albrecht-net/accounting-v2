@@ -13,7 +13,7 @@ function sendFormData(formID) {
         fetch(url, {
             method: method,
             body: payload,
-            credentials: 'omit'
+            credentials: 'same-origin'
         }).then(function(response) {
             console.log(response);
             if (!response.ok) {
