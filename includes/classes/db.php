@@ -68,7 +68,7 @@ class db {
             $this->_connect_sys_db();
         } else {
             $this->_user_id = $mode;
-            $this->_connect_usr_db($mode);
+            $this->_connect_usr_db();
         }
     }
 
@@ -94,17 +94,16 @@ class db {
 
     /**
      * Open a new connection to the MySQL server for user database.
-     * For the database credentials the userID will be used. userDbSet must be true in the session otherwise it return false.
+     * For the database credentials the userID (stored in $_user_id) will be used.
      * 
-     * @param int $user_id: Set userID to query credentials for user database.
      * @return void No value is returned
      */
-    private function _connect_usr_db(int $user_id) {
+    private function _connect_usr_db() {
         if (!self::$_instance_sys_link->prepare("SELECT db_host, db_port, db_username, db_password, db_name FROM `databases` WHERE user_id=? LIMIT 1")) {
             return;
         }
 
-        if (!self::$_instance_sys_link->bind_param("i", $user_id)) {
+        if (!self::$_instance_sys_link->bind_param("i", $this->_user_id)) {
             return;
         }
 
@@ -113,7 +112,7 @@ class db {
         }
 
         if (self::$_instance_sys_link->count() != 1) {
-            trigger_error('Cancel connection to user database. No user database credentials found for User #' . $user_id);
+            trigger_error('Cancel connection to user database. No user database credentials found for User #' . $this->_user_id);
             return;
         }
         $result = self::$_instance_sys_link->fetch_array()[0];
@@ -121,7 +120,7 @@ class db {
         $this->errno = $this->_mysqli->connect_errno;
 
         if ($this->_mysqli->connect_errno) {
-            trigger_error('User #' . $user_id . ' cannot connect to user database. MySQL said: #' . mysqli_connect_errno() . ' - ' . mysqli_connect_error(), E_USER_NOTICE);
+            trigger_error('User #' . $this->_user_id . ' cannot connect to user database. MySQL said: #' . mysqli_connect_errno() . ' - ' . mysqli_connect_error(), E_USER_NOTICE);
             return;
         }
 
