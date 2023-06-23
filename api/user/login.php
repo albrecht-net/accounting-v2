@@ -75,10 +75,6 @@ if ($request_data['remember']) {
     $arr_cookie_options['expires'] = 0;
 }
 
-// Format timestampt to string for database
-$time_expire_string = date('Y-m-d H:i:s', $time_expire);
-$time_now_string = date('Y-m-d H:i:s', $time_now);
-
 // Generate session id
 $sid = bin2hex(random_bytes(32));
 
@@ -86,13 +82,13 @@ $sid = bin2hex(random_bytes(32));
 $user_agent = explode(" ", $_SERVER['HTTP_USER_AGENT'], 2)[0];
 
 // Insert new row to sessions table
-if (!db::init()->prepare("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, ?, ?)")) {
+if (!db::init()->prepare("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?))")) {
     trigger_error("MySQL Error occoured: ");
     http_response_code(500);
     exit;
 }
 
-if (!db::init()->bind_param("sissss", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire_string, $time_now_string)) {
+if (!db::init()->bind_param("sissss", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire, $time_now)) {
     trigger_error("MySQL Error occoured: ");
     http_response_code(500);
     exit;
