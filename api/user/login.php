@@ -54,7 +54,7 @@ if (!password_verify($request_data['password'], db::init()->fetch_one()['passwor
 
 // Cookie parameters
 $arr_cookie_options = array(
-    'path' => urlencode(ROOT_PATH),
+    'path' => '/',
     'secure' => true,
     'httponly' => true,
     'samesite' => 'strict'
