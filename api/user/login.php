@@ -13,7 +13,7 @@ header('Content-Type: application/json');
 $request_data = array(
     'username' => trim($_POST['in-text-username']),
     'password' => $_POST['in-password-password'],
-    'remember' => boolval($_POST['chk-remember'])
+    'remember' => empty($_POST['chk-remember']) ? false : boolval($_POST['chk-remember'])
 );
 
 if (strlen($request_data['username']) < 1) {
