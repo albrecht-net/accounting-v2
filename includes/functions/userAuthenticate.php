@@ -21,13 +21,17 @@ function userAuthenticate(string $sid = null) {
         if (substr($_SERVER['HTTP_AUTHORIZATION'], 0, 7) !== "Bearer ") {
             trigger_error("Wrong type of authentication scheme was given.", E_USER_WARNING);
             define('USER_ID', null);
+            http_response_code(401);
             return false;
         }
         $sid = substr($_SERVER['HTTP_AUTHORIZATION'], 7);
     } elseif (($sid == null) && !empty($_COOKIE['sid'])) {
         $sid = $_COOKIE['sid'];
     } elseif ($sid == null) {
-        
+        trigger_error("No session id was given.", E_USER_WARNING);
+        define('USER_ID', null);
+        http_response_code(401);
+        return false;
     }
 
     $time_now = time();
@@ -36,40 +40,44 @@ function userAuthenticate(string $sid = null) {
     if (!db::init()->prepare("SELECT `user_id`, UNIX_TIMESTAMP(expiry_date) AS `expiry_date` FROM `sessions` WHERE id = ? LIMIT 1")) {
         trigger_error("MySQL Error occoured: ");
         define('USER_ID', null);
+        http_response_code(500);
         return false;
     }
 
     if (!db::init()->bind_param("s", $sid)) {
         trigger_error("MySQL Error occoured: ");
         define('USER_ID', null);
+        http_response_code(500);
         return false;
     }
 
     if (!db::init()->run_query()) {
         trigger_error("MySQL Error occoured: ");
         define('USER_ID', null);
+        http_response_code(500);
         return false;
     }
 
     // Check if session found
     if (db::init()->count() != 1) {
         define('USER_ID', null);
+        http_response_code(401);
         return false;
     }
 
     // Check if session not expired
     if (db::init()->fetch_one()['expiry_date'] < $time_now) {
         define('USER_ID', null);
+        http_response_code(401);
         return false;
     }
 
     define('USER_ID', db::init()->fetch_one()['user_id']);
-
     return true;
 }
 
-if (REQUIRE_AUTH === true) {
-    
-} else {
+if (REQUIRE_AUTH !== true) {
     define('USER_ID', null);
+} elseif (!userAuthenticate()) {
+    exit;
 }
