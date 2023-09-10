@@ -19,8 +19,8 @@ function userAuthenticate(string $sid = null) {
     // Set session id
     if (($sid == null) && !empty($_SERVER['HTTP_AUTHORIZATION'])) {
         if (substr($_SERVER['HTTP_AUTHORIZATION'], 0, 7) !== "Bearer ") {
-            trigger_error("Wrong type of authentication scheme was given.", E_USER_WARNING);
-            define('USER_ID', null);
+            trigger_error("Wrong type of authentication scheme from [" . $_SERVER['REMOTE_ADDR'] . "]", E_USER_WARNING);
+            define('USER_ID', 0);
             http_response_code(401);
             return false;
         }
@@ -28,8 +28,8 @@ function userAuthenticate(string $sid = null) {
     } elseif (($sid == null) && !empty($_COOKIE['sid'])) {
         $sid = $_COOKIE['sid'];
     } elseif ($sid == null) {
-        trigger_error("No session id was given.", E_USER_WARNING);
-        define('USER_ID', null);
+        trigger_error("No session id from [" . $_SERVER['REMOTE_ADDR'] . "]", E_USER_NOTICE);
+        define('USER_ID', 0);
         http_response_code(401);
         return false;
     }
@@ -37,37 +37,25 @@ function userAuthenticate(string $sid = null) {
     $time_now = time();
 
     // Get row matching the given session id
-    if (!db::init()->prepare("SELECT `user_id`, UNIX_TIMESTAMP(expiry_date) AS `expiry_date` FROM `sessions` WHERE id = ? LIMIT 1")) {
-        trigger_error("MySQL Error occoured: ");
-        define('USER_ID', null);
-        http_response_code(500);
-        return false;
-    }
-
-    if (!db::init()->bind_param("s", $sid)) {
-        trigger_error("MySQL Error occoured: ");
-        define('USER_ID', null);
-        http_response_code(500);
-        return false;
-    }
-
-    if (!db::init()->run_query()) {
-        trigger_error("MySQL Error occoured: ");
-        define('USER_ID', null);
+    try {
+        db::init()->run_query("SELECT `user_id`, UNIX_TIMESTAMP(expiry_date) AS `expiry_date` FROM `sessions` WHERE id = ? LIMIT 1", "s", $sid);
+    } catch (exception_sys_link $e) {
+        trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
+        define('USER_ID', 0);
         http_response_code(500);
         return false;
     }
 
     // Check if session found
     if (db::init()->count() != 1) {
-        define('USER_ID', null);
+        define('USER_ID', 0);
         http_response_code(401);
         return false;
     }
 
     // Check if session not expired
     if (db::init()->fetch_one()['expiry_date'] < $time_now) {
-        define('USER_ID', null);
+        define('USER_ID', 0);
         http_response_code(401);
         return false;
     }
@@ -77,7 +65,7 @@ function userAuthenticate(string $sid = null) {
 }
 
 if (REQUIRE_AUTH !== true) {
-    define('USER_ID', null);
+    define('USER_ID', 0);
 } elseif (!userAuthenticate()) {
     exit;
 }

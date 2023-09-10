@@ -22,32 +22,22 @@ if (strlen($request_data['username']) < 1) {
 }
 
 // Query users table by given username
-if (!db::init()->prepare("SELECT `id`, `password` FROM `users` WHERE username=? AND `status`='Y'")) {
-    trigger_error("MySQL Error occoured: ");
-    http_response_code(500);
-    exit;
-}
-
-if (!db::init()->bind_param("s", $request_data['username'])) {
-    trigger_error("MySQL Error occoured: ");
-    http_response_code(500);
-    exit;
-}
-
-if (!db::init()->run_query()) {
-    trigger_error("MySQL Error occoured: ");
+try {
+    db::init()->run_query("SELECT `id`, `password` FROM `users` WHERE username=? AND `status`='Y'", "s", $request_data['username']);
+} catch (exception_sys_link $e) {
+    trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
     http_response_code(500);
     exit;
 }
 
 if (db::init()->count() != 1) {
-    trigger_error("Username '" . $request_data['username'] . "' was not found.");
+    trigger_error("Username '" . $request_data['username'] . "' was not found.", E_USER_NOTICE);
     http_response_code(401);
     exit;
 }
 
 if (!password_verify($request_data['password'], db::init()->fetch_one()['password'])) {
-    trigger_error("Invalid credentials provided for user'" . $request_data['username'] . "'.");
+    trigger_error("Invalid credentials provided for user'" . $request_data['username'] . "'.", E_USER_NOTICE);
     http_response_code(401);
     exit;
 }
@@ -82,23 +72,14 @@ $sid = bin2hex(random_bytes(32));
 $user_agent = explode(" ", $_SERVER['HTTP_USER_AGENT'], 2)[0];
 
 // Insert new row to sessions table
-if (!db::init()->prepare("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?))")) {
-    trigger_error("MySQL Error occoured: ");
+try {
+    db::init()->run_query("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?))", "sissss", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire, $time_now);
+} catch (exception_sys_link $e) {
+    trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
     http_response_code(500);
     exit;
 }
 
-if (!db::init()->bind_param("sissss", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire, $time_now)) {
-    trigger_error("MySQL Error occoured: ");
-    http_response_code(500);
-    exit;
-}
-
-if (!db::init()->run_query()) {
-    trigger_error("MySQL Error occoured: ");
-    http_response_code(500);
-    exit;
-}
 
 // Send cookie with additional parameters
 setcookie('sid', $sid, $arr_cookie_options);
