@@ -101,17 +101,7 @@ class db {
      * @return void No value is returned
      */
     private function _connect_usr_db() {
-        if (!self::$_instance_sys_link->prepare("SELECT db_host, db_port, db_username, db_password, db_name FROM `databases` WHERE user_id=? LIMIT 1")) {
-            return;
-        }
-
-        if (!self::$_instance_sys_link->bind_param("i", $this->_mode)) {
-            return;
-        }
-
-        if (!self::$_instance_sys_link->run_query()) {
-            return;
-        }
+        self::$_instance_sys_link->run_query("SELECT db_host, db_port, db_username, db_password, db_name FROM `databases` WHERE user_id=? LIMIT 1", "i", $this->_mode);
 
         if (self::$_instance_sys_link->count() != 1) {
             throw new exception_usr_link("No user database credentials found for User #" . $this->_mode);
@@ -132,52 +122,67 @@ class db {
     }
 
     /**
-     * Wrapper for mysqli_stmt::prepare
+     * Wrapper for mysqli_stmt::prepare, mysqli_stmt::bind_param and mysqli_stmt::execute, creates a mysqli_result
      * 
      * @param string $query The query, as a string. It must consist of a single SQL statement.
+     * @param string $types A string that contains one or more characters which specify the types for the corresponding bind variables.
+     * @param mixed $var Parameter
+     * @param mixed $vars Additional parameters. The number of variables and length of string types must match the parameters in the statement.
+     * @throws exception_sys_link|exception_usr_link
      * @return bool Returns true on success or false on failure.
      */
-    public function prepare(string $query) {
+    public function run_query(string $query, string $types = null, &$var = null, &...$vars) {
         if (!$this->_stmt->prepare($query)) {
             $this->errno = $this->_stmt->errno;
             $this->error = $this->_stmt->error;
+
+            if ($this->_mode == -1) {
+                throw new exception_sys_link($this->_stmt->error, $this->_stmt->errno);
+            } else {
+                throw new exception_usr_link($this->_stmt->error, $this->_stmt->errno);
+            }
+
             return false;
         }
-        return true;
-    }
 
-    /**
-     * Wrapper for mysqli_stmt::bind_param
-     * 
-     * @param string $types A string that contains one or more characters which specify the types for the corresponding bind variables.
-     * @param mixed $var Parameter
-     * @param mixed $vars Additional parameters. The number of variables and length of string types must match the parameters in the statement. 
-     * @return bool Returns true on success or false on failure.
-     */
-    public function bind_param(string $types, &$var, &...$vars) {
-        if (!$this->_stmt->bind_param($types, $var, ...$vars)) {
-            $this->errno = $this->_stmt->errno;
-            $this->error = $this->_stmt->error;
-            return false;
+        if ($types !== null) {
+            if (!$this->_stmt->bind_param($types, $var, ...$vars)) {
+                $this->errno = $this->_stmt->errno;
+                $this->error = $this->_stmt->error;
+
+                if ($this->_mode == -1) {
+                    throw new exception_sys_link($this->_stmt->error, $this->_stmt->errno);
+                } else {
+                    throw new exception_usr_link($this->_stmt->error, $this->_stmt->errno);
+                }
+
+                return false;
+            }
         }
-        return true;
-    }
 
-    /**
-     * Runs mysqli_stmt::execute and create a mysqli_result
-     * 
-     * @return bool Returns true on success or false on failure.
-     */
-    public function run_query() {
         if (!$this->_stmt->execute()) {
             $this->errno = $this->_stmt->errno;
             $this->error = $this->_stmt->error;
+
+            if ($this->_mode == -1) {
+                throw new exception_sys_link($this->_stmt->error, $this->_stmt->errno);
+            } else {
+                throw new exception_usr_link($this->_stmt->error, $this->_stmt->errno);
+            }
+
             return false;
         }
         $this->_result = $this->_stmt->get_result();
         if ($this->_stmt->errno != 0) {
             $this->errno = $this->_stmt->errno;
             $this->error = $this->_stmt->error;
+
+            if ($this->_mode == -1) {
+                throw new exception_sys_link($this->_stmt->error, $this->_stmt->errno);
+            } else {
+                throw new exception_usr_link($this->_stmt->error, $this->_stmt->errno);
+            }
+
             return false;
         }
         return true;
