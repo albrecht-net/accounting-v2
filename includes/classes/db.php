@@ -11,9 +11,9 @@ class db {
     private static $_instance_usr_link = null;
 
     /**
-     * @var int $_user_id Integer which stores the given user_id for the user database.
+     * @var int $_mode Mode selector, -1: System database, otherwise user_id (int != -1)
      */
-    private $_user_id;
+    private $_mode;
 
     /**
      * @var object $_mysqli Object which represents the connection to the MySQL Server.
@@ -41,7 +41,7 @@ class db {
      * @return object Return the instantiated object of the choosen database.
      */
     public static function init(int $mode = -1) {
-        if ($mode === -1) {
+        if ($mode == -1) {
             if (!isset(self::$_instance_sys_link)) {
                 self::$_instance_sys_link = new self(-1);
             }
@@ -50,7 +50,7 @@ class db {
             if (!isset(self::$_instance_sys_link)) {
                 self::$_instance_sys_link = new self(-1);
             }
-            if (!isset(self::$_instance_usr_link) | self::$_instance_usr_link->_user_id !== $mode) {
+            if (!isset(self::$_instance_usr_link) | self::$_instance_usr_link->_mode !== $mode) {
                 self::$_instance_usr_link = new self($mode);
             }
             return self::$_instance_usr_link;
@@ -64,11 +64,11 @@ class db {
      * @return void No value is returned
      */
     private function __construct(int $mode) {
-        if ($mode === -1) {
+        $this->_mode = $mode;
+        if ($mode == -1) {
             $this->_connect_sys_db();
         } else {
-            $this->_user_id = $mode;
-            $this->_connect_usr_db();
+                        $this->_connect_usr_db();
         }
     }
 
@@ -94,7 +94,7 @@ class db {
 
     /**
      * Open a new connection to the MySQL server for user database.
-     * For the database credentials the userID (stored in $_user_id) will be used.
+     * For the database credentials the userID (stored in $_mode) will be used.
      * 
      * @return void No value is returned
      */
@@ -103,7 +103,7 @@ class db {
             return;
         }
 
-        if (!self::$_instance_sys_link->bind_param("i", $this->_user_id)) {
+        if (!self::$_instance_sys_link->bind_param("i", $this->_mode)) {
             return;
         }
 
@@ -112,7 +112,7 @@ class db {
         }
 
         if (self::$_instance_sys_link->count() != 1) {
-            trigger_error('Cancel connection to user database. No user database credentials found for User #' . $this->_user_id);
+            trigger_error('Cancel connection to user database. No user database credentials found for User #' . $this->_mode);
             return;
         }
         $result = self::$_instance_sys_link->fetch_array()[0];
@@ -120,7 +120,7 @@ class db {
         $this->errno = $this->_mysqli->connect_errno;
 
         if ($this->_mysqli->connect_errno) {
-            trigger_error('User #' . $this->_user_id . ' cannot connect to user database. MySQL said: #' . mysqli_connect_errno() . ' - ' . mysqli_connect_error(), E_USER_NOTICE);
+            trigger_error('User #' . $this->_mode . ' cannot connect to user database. MySQL said: #' . mysqli_connect_errno() . ' - ' . mysqli_connect_error(), E_USER_NOTICE);
             return;
         }
 
