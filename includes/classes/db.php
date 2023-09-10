@@ -1,4 +1,6 @@
 <?php
+class exception_sys_link extends Exception {}
+class exception_usr_link extends Exception {}
 class db {
     /**
      * @var object $_instance_sys_link Object of the instantiated class for the system database.
@@ -83,7 +85,7 @@ class db {
         $this->errno = $this->_mysqli->connect_errno;
 
         if ($this->_mysqli->connect_errno) {
-            trigger_error('Cannot connect to system database, check config.php. MySQL said: #' . mysqli_connect_errno() . ' - ' . mysqli_connect_error(), E_USER_ERROR);
+            throw new exception_sys_link("Cannot connect to system database, check config.php. MySQL said: #" . mysqli_connect_errno() . " - " . mysqli_connect_error(), mysqli_connect_errno());
             return;
         }
 
@@ -112,7 +114,7 @@ class db {
         }
 
         if (self::$_instance_sys_link->count() != 1) {
-            trigger_error('Cancel connection to user database. No user database credentials found for User #' . $this->_mode);
+            throw new exception_usr_link("No user database credentials found for User #" . $this->_mode);
             return;
         }
         $result = self::$_instance_sys_link->fetch_array()[0];
