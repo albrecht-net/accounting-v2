@@ -33,4 +33,13 @@ if(!in_array($_SERVER['REQUEST_METHOD'], ACCESS_CONTROL_ALLOW_METHODS)) {
     exit();
 }
 
+// Verify request content-type header. If value is set, only application/json is allowed.
+if (!empty($_SERVER['CONTENT_TYPE'])) {
+    if (trim(explode(";", $_SERVER['CONTENT_TYPE'])[0]) !== "application/json") {
+        http_response_code(415);
+        header('Content-Type: application/json');
+        exit;
+    }    
+}
+
 require_once ROOT_PATH .'includes' . DIRECTORY_SEPARATOR . 'functions' . DIRECTORY_SEPARATOR . 'userAuthenticate.php';
