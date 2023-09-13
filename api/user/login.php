@@ -10,11 +10,16 @@ require_once ROOT_PATH . 'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_S
 
 header('Content-Type: application/json');
 
-$request_data = array(
-    'username' => trim($_POST['in-text-username']),
-    'password' => $_POST['in-password-password'],
-    'remember' => empty($_POST['chk-remember']) ? false : boolval($_POST['chk-remember'])
-);
+try {
+    $request_data = array(
+        'username' => trim(request::body('username')),
+        'password' => request::body('password'),
+        'remember' => empty(request::body('remember')) ? false : boolval(request::body('remember'))
+    );
+} catch (JsonException $e) {
+    http_response_code(400);
+    exit;
+}
 
 if (strlen($request_data['username']) < 1) {
     http_response_code(400);
