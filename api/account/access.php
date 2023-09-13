@@ -4,7 +4,7 @@ if (!defined('ROOT_PATH')) {
 }
 
 // Allowed request types
-define('ACCESS_CONTROL_ALLOW_METHODS', array('POST'));
+define('ACCESS_CONTROL_ALLOW_METHODS', array('POST', 'DELETE'));
 
 require_once ROOT_PATH . 'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'init.php';
 
