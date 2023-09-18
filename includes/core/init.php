@@ -28,16 +28,16 @@ require_once ROOT_PATH .'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SE
 
 // Verify if requested method is in allowed ones
 if(!in_array($_SERVER['REQUEST_METHOD'], ACCESS_CONTROL_ALLOW_METHODS)) {
-    http_response_code(405);
-    header('Allow: ' . implode(', ', ACCESS_CONTROL_ALLOW_METHODS));
-    exit();
+    response::error('Method ' . $_SERVER['REQUEST_METHOD'] . ' not available for that URI.');
+    response::send(false, 405, 'Allow: ' . implode(', ', ACCESS_CONTROL_ALLOW_METHODS));
+    exit;
 }
 
 // Verify request content-type header. If value is set, only application/json is allowed.
 if (!empty($_SERVER['CONTENT_TYPE'])) {
-    if (trim(explode(";", $_SERVER['CONTENT_TYPE'])[0]) !== "application/json") {
-        http_response_code(415);
-        header('Content-Type: application/json');
+    if (trim(explode(';', $_SERVER['CONTENT_TYPE'])[0]) !== 'application/json') {
+        response::error('Invalid Content-Type header, valid values are application/json');
+        response::send(false, 415, 'Content-Type: application/json');
         exit;
     }    
 }

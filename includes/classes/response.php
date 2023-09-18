@@ -3,12 +3,12 @@ class response {
     /**
      * @var array      $_response      Array contain data for response after form submit
      *                                 $_response = [
-     *                                   'error' => [
-     *                                     'code'    => (integer)
-     *                                     'message'     => (string)
+     *                                   'error'    => [
+     *                                     'code'     => (integer)
+     *                                     'message'  => (string)
      *                                   ]
-     *                                   'result'              => [] (array)
-     *                                   'success'           => (bool)
+     *                                   'result'   => [] (array)
+     *                                   'success'  => (bool)
      *                                 ]
      * 
      */
@@ -27,16 +27,19 @@ class response {
      * @param string   $headers        Optional. Additional raw HTTP header.
      * @return void                    No value is returned
      */
-    public static function send(bool $success, int $http_code, string ...$headers = null) {
+    public static function send(bool $success, int $http_code, string ...$headers) {
         self::$_response['success'] = $success;
 
         http_response_code($http_code);
-
-        if (isset($headers)) {
+        
+        if (!empty($headers)) {
             foreach ($headers as $value) {
                 header($value);
             }
         }
+        
+        header('Content-Type: application/json');
+        echo json_encode(self::$_response);
 
         return;
     }
@@ -61,6 +64,7 @@ class response {
      * @return void                    No value is returned
      */
     public static function error(string $message, int $code = null) {
-
+        self::$_response['error']['code'] = $code;
+        self::$_response['error']['message'] = $message;
     }
 }

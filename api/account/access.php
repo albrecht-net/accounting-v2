@@ -8,8 +8,6 @@ define('ACCESS_CONTROL_ALLOW_METHODS', array('POST', 'DELETE'));
 
 require_once ROOT_PATH . 'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'init.php';
 
-header('Content-Type: application/json');
-
 // Cookie parameters
 $arr_cookie_options = array(
     'path' => '/',
@@ -27,12 +25,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             'remember' => empty(request::body('remember')) ? false : boolval(request::body('remember'))
         );
     } catch (JsonException $e) {
-        http_response_code(400);
+        response::error('Missing request data.');
+        response::send(false, 400);
         exit;
     }
     
     if (strlen($request_data['username']) < 1) {
-        http_response_code(400);
+        response::error('Missing request data.');
+        response::send(false, 400);
         exit;
     }
     
@@ -41,19 +41,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         db::init()->run_query("SELECT `id`, `password` FROM `users` WHERE username=? AND `status`='Y'", "s", $request_data['username']);
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
-        http_response_code(500);
+
+        response::error('Internal application error occurred.');
+        response::send(false, 500);
         exit;
     }
     
     if (db::init()->count() != 1) {
         trigger_error("Username '" . $request_data['username'] . "' was not found.", E_USER_NOTICE);
-        http_response_code(401);
+        response::error('Invalid user credentials.');
+        response::send(false, 401);
         exit;
     }
     
     if (!password_verify($request_data['password'], db::init()->fetch_one()['password'])) {
         trigger_error("Invalid credentials provided for user'" . $request_data['username'] . "'.", E_USER_NOTICE);
-        http_response_code(401);
+        response::error('Invalid user credentials.');
+        response::send(false, 401);
         exit;
     }
     
@@ -83,7 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         db::init()->run_query("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?))", "sissss", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire, $time_now);
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
-        http_response_code(500);
+
+        response::error('Internal application error occurred.');
+        response::send(false, 500);
         exit;
     }
 
@@ -92,14 +98,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Set session id
     if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
         if (substr($_SERVER['HTTP_AUTHORIZATION'], 0, 7) !== "Bearer ") {
-            http_response_code(401);
+            response::error('Wrong type of authentication scheme.');
+            response::send(false, 401, 'WWW-Authenticate: Bearer');
             exit;
         }
         $sid = substr($_SERVER['HTTP_AUTHORIZATION'], 7);
     } elseif (!empty($_COOKIE['sid'])) {
         $sid = $_COOKIE['sid'];
     } else {
-        http_response_code(401);
+        response::error('Missing session id, provide session id over authorization header or cookie.');
+        response::send(false, 401, 'WWW-Authenticate: Bearer');
         exit;
     }
 
@@ -108,7 +116,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         db::init()->run_query("UPDATE `sessions` SET `expiry_date` = current_timestamp() WHERE `sessions`.`id` = ? AND `expiry_date` > NOW()", "s", $sid);
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
-        http_response_code(500);
+
+        response::error('Internal application error occurred.');
+        response::send(false, 500);
         return false;
     }
 
@@ -119,10 +129,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 // Send cookie with additional parameters
 setcookie('sid', $sid, $arr_cookie_options);
 
-$response = array(
-    'success' => true
-);
-
-echo json_encode($response);
-http_response_code(200);
+response::result(array('session_id' => $sid));
+response::send(true, 200);
 exit;
