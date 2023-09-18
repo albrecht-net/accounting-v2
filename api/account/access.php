@@ -93,6 +93,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
+    // Send cookie with additional parameters
+    setcookie('sid', $sid, $arr_cookie_options);
+
+    response::result(array('session_id' => $sid));
+    response::send(true, 200);
+    exit;
+
 // Delete access token (logout user)
 } elseif ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
     // Set session id
@@ -122,13 +129,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         return false;
     }
 
-    // Set cookie expire timestamp to past
-    $arr_cookie_options['expires'] = 1;
+    // Expire cookie if session if was provided by it
+    if (!empty($_COOKIE['sid'])) {
+        if ($_COOKIE['sid'] == $sid) {
+            // Set cookie expire timestamp to past
+            $arr_cookie_options['expires'] = 1;
+    
+            // Send cookie with additional parameters
+            setcookie('sid', $sid, $arr_cookie_options);
+        }
+    }
+
+    response::send(true, 200);
+    exit;
 }
-
-// Send cookie with additional parameters
-setcookie('sid', $sid, $arr_cookie_options);
-
-response::result(array('session_id' => $sid));
-response::send(true, 200);
-exit;
