@@ -135,7 +135,7 @@ class db {
      * @throws                         exception_usr_link if mode selector is not equal to -1
      * @return bool                    Returns true on success or false on failure.
      */
-    public function run_query(string $query, string $types = null, &$var = null, &...$vars) {
+    public function run_query(string $query, string $types = null, $var = null, ...$vars) {
         if (!$this->_stmt->prepare($query)) {
             $this->errno = $this->_stmt->errno;
             $this->error = $this->_stmt->error;
