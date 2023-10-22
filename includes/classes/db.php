@@ -1,4 +1,9 @@
 <?php
+
+// Deactivate error reporting
+$driver = new mysqli_driver();
+$driver->report_mode = MYSQLI_REPORT_OFF;
+
 class exception_sys_link extends Exception {}
 class exception_usr_link extends Exception {}
 class db {
