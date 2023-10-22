@@ -45,16 +45,13 @@ COLLATE=utf8mb4_general_ci;
 --
 
 CREATE TABLE `databases` (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
     `user_id` int(11) NOT NULL,
-    `created` datetime NOT NULL DEFAULT current_timestamp() ,
     `db_host` varchar(32) NOT NULL,
     `db_port` int(11) NOT NULL,
     `db_username` varchar(64) NOT NULL,
     `db_password` varchar(64) NOT NULL,
     `db_name` varchar(64) NOT NULL,
-    PRIMARY KEY (`id`),
-    KEY `userID` (`user_id`),
+    PRIMARY KEY `userID` (`user_id`),
     CONSTRAINT `databases_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE=InnoDB
