@@ -43,12 +43,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         }
     }
 
-    if ($_tmp_mysqli->connect_errno) {
-    } else {
-        // Close temporary connection
-        $_tmp_mysqli->close();
+    // Insert new row to sessions table
+    try {
+        db::init()->run_query("INSERT INTO `databases` (`user_id`, `db_host`, `db_port`, `db_username`, `db_password`, `db_name`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `db_host` = ?, `db_port` = ?, `db_username` = ?, `db_password` = ?, `db_name` = ?", "isissssisss", USER_ID, $request_data['db_host'], $request_data['db_port'], $request_data['db_username'], $request_data['db_password'], $request_data['db_name'], $request_data['db_host'], $request_data['db_port'], $request_data['db_username'], $request_data['db_password'], $request_data['db_name']);
+    } catch (exception_sys_link $e) {
+        trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
+
+        response::error('Internal application error occurred.');
+        response::send(false, 500);
+        exit;
     }
 
+    response::send(true, 201);
+    exit;
 
 // Delete current user database configuration
 } elseif ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
