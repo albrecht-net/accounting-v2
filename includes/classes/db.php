@@ -13,7 +13,7 @@ class db {
     private static $_instance_usr_link = null;
 
     /**
-     * @var int        $_mode          Mode selector, -1: System database, otherwise user_id (int != -1)
+     * @var int        $_mode          Mode selector, -1: System database, otherwise user_id (int != -1).
      */
     private $_mode;
 
@@ -26,12 +26,17 @@ class db {
     private $_result;
 
     /**
-     * @var int        $errno          Error code for the most recent function call
+     * @var string     $server_info    Version of the MySQL server.
+     */
+    public $server_info;
+
+    /**
+     * @var int        $errno          Error code for the most recent function call.
      */
     public $errno;
 
     /**
-     * @var string     $error          Description for last statement error
+     * @var string     $error          Description for last statement error.
      */
     public $error;
 
@@ -94,6 +99,8 @@ class db {
 
         $this->_stmt = $this->_mysqli->stmt_init();
 
+        $this->server_info = $this->_mysqli->server_info;
+
         return;
     }
 
@@ -120,6 +127,8 @@ class db {
         }
 
         $this->_stmt = $this->_mysqli->stmt_init();
+
+        $this->server_info = $this->_mysqli->server_info;
 
         return;
     }
