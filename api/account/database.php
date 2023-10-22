@@ -32,18 +32,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
 
     // Open temporary connection to user database
-    $_tmp_mysqli = new mysqli($request_data['db.host'], $request_data['db.username'], $request_data['db.password'], $request_data['db.name'], $request_data['db.port']);
-
-    if ($_tmp_mysqli->connect_errno) {
-        // Close temporary connection
-        $_tmp_mysqli->close();
-
-        response::error("Cannot connect to system database, check config.php. MySQL said: #" . mysqli_connect_errno() . " - " . mysqli_connect_error(), mysqli_connect_errno());
-
+    try {
+        $_tmp_mysqli = new mysqli($request_data['db_host'], $request_data['db_username'], $request_data['db_password'], $request_data['db_name'], $request_data['db_port']);
+    } catch (mysqli_sql_exception $e) {
+        response::error("Cannot connect to user database, check given credentials. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+    
         if ($request_data['force'] == false) {
             response::send(false, 400);
             exit;
         }
+    }
+
+    if ($_tmp_mysqli->connect_errno) {
     } else {
         // Close temporary connection
         $_tmp_mysqli->close();
