@@ -23,7 +23,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit;
     }
 
-    response::result(db::init()->fetch_one());
+    if (db::init()->count() != 1 ) {
+        response::result(array('db_host'=>null, 'db_port'=>null, 'db_username'=>null, 'db_name'=>null));
+    } else{
+        response::result(db::init()->fetch_one());
+    }
 
     try {
         response::result(array('server_info'=>db::init(USER_ID)->server_info));
@@ -34,8 +38,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::send(false, 500);
         exit;
     } catch (exception_usr_link $e) {
+        trigger_error('uid: ' . USER_ID . " #" . $e->getCode() . " - " . $e->getMessage(), E_USER_NOTICE);
 
+        response::error("Error with user database occoured while fetching server info. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+        response::result(array('server_info'=>'unknown'));
     }
+
     response::send(true, 200);
     exit;
 
