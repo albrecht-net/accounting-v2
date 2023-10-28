@@ -91,6 +91,7 @@ class db {
      * Open a new connection to the MySQL server for system database.
      * For the database credentials the entries from the config will be used.
      * 
+     * @throws                         exception_sys_link if some connection error occoured
      * @return void                    No value is returned
      */
     private function _connect_sys_db() {
