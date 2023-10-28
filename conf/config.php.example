@@ -11,6 +11,9 @@ return array (
     'session.inactive_time' => 1800,
     'session.max_lifetime' => 864000,
 
+    // API
+    'response.json.pretty' => false,
+
     // Logging
     'log.path' => '',
     'log.level' => E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE,

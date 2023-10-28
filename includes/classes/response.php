@@ -39,7 +39,14 @@ class response {
         }
         
         header('Content-Type: application/json');
-        echo json_encode(self::$_response);
+
+        $_flags = 0;
+
+        if (config::get('response.json.pretty') == true) {
+            $_flags += JSON_PRETTY_PRINT;
+        }
+
+        echo json_encode(self::$_response, $_flags);
 
         return;
     }
