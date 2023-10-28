@@ -113,13 +113,14 @@ class db {
      * Open a new connection to the MySQL server for user database.
      * For the database credentials the userID (stored in $_mode) will be used.
      * 
+     * @throws                         exception_usr_link if no user database credentials where found for the selected user or some connection error occoured while connection to the user database
      * @return void                    No value is returned
      */
     private function _connect_usr_db() {
         self::$_instance_sys_link->run_query("SELECT db_host, db_port, db_username, db_password, db_name FROM `databases` WHERE user_id=? LIMIT 1", "i", $this->_mode);
 
         if (self::$_instance_sys_link->count() != 1) {
-            throw new exception_usr_link("No user database credentials found for User #" . $this->_mode);
+            throw new exception_usr_link("No user database credentials found for current user.");
             return;
         }
         $result = self::$_instance_sys_link->fetch_array()[0];
@@ -127,7 +128,7 @@ class db {
         $this->errno = $this->_mysqli->connect_errno;
 
         if ($this->_mysqli->connect_errno) {
-            throw new exception_usr_link('User #' . $this->_mode . ' cannot connect to user database. MySQL said: #' . mysqli_connect_errno() . ' - ' . mysqli_connect_error(), mysqli_connect_errno());
+            throw new exception_usr_link(mysqli_connect_error(), mysqli_connect_errno());
             return;
         }
 
