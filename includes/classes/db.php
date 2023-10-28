@@ -228,12 +228,22 @@ class db {
      * Fetches one result row as an associative array.
      * 
      * @param int      $offset         Adjusts the result pointer to the given offset and return one result row as array
-     * @return array|void|bool         Returns an array representing the fetched row, null if there are no more rows in the result set, or false on failure.
+     * @return array                   Returns an array representing the fetched row or empty array if there are no more rows in the result or on failure.
      */
     public function fetch_one(int $offset = 0) {
-        if (!$this->_result->data_seek($offset)) {
-            return false;
+        if ($this->count() < 1) {
+            return array();
         }
-        return $this->_result->fetch_array(MYSQLI_ASSOC);
+
+        if (!$this->_result->data_seek($offset)) {
+            return array();
+        }
+
+        $_result = $this->_result->fetch_array(MYSQLI_ASSOC);
+        if ($_result === false | $_result === null) {
+            return array();
+        } else {
+            return $_result;
+        }
     }
 }
