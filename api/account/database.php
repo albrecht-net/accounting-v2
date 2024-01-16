@@ -51,15 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 } elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
     try {
         $request_data = array(
-            'db_host' => trim(request::body('db_host')),
-            'db_port' => trim(request::body('db_port')),
-            'db_username' => trim(request::body('db_username')),
-            'db_password' => request::body('db_password'),
-            'db_name' => trim(request::body('db_name')),
-            'force' => empty(request::body('force')) ? false : boolval(request::body('force'))
+            'db_host' => request::body('db_host', true),
+            'db_port' => request::body('db_port', true),
+            'db_username' => request::body('db_username', true),
+            'db_password' => request::body('db_password', true, false),
+            'db_name' => request::body('db_name', true),
+            'force' => empty(request::body('force', false, false)) ? false : boolval(request::body('force', false, false))
         );
     } catch (JsonException $e) {
-        response::error('Missing request data.');
+        response::error('Invalid or missing request data.');
+        response::send(false, 400);
+        exit;
+    } catch (exception_request $e) {
+        response::error($e->getMessage());
         response::send(false, 400);
         exit;
     }
