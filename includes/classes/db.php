@@ -146,7 +146,7 @@ class db {
      * @param string   $query          The query, as a string. It must consist of a single SQL statement.
      * @param string   $types          Optional. A string that contains one or more characters which specify the types for the corresponding bind variables.
      * @param mixed    $var            Optional (Required if $types is set). Parameter. The number of variables and length of string $types must match the parameters in the statement.
-     * @param mixed    $vars           Optional  (Required if $types is set). Additional parameters. The number of variables and length of string $types must match the parameters in the statement.
+     * @param mixed    $vars           Optional (Required if $types is set). Additional parameters. The number of variables and length of string $types must match the parameters in the statement.
      * @throws                         exception_sys_link if mode selector is equal to -1
      * @throws                         exception_usr_link if mode selector is not equal to -1
      * @return bool                    Returns true on success or false on failure.
