@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     } catch (exception_usr_link $e) {
         trigger_error('uid: ' . USER_ID . " #" . $e->getCode() . " - " . $e->getMessage(), E_USER_NOTICE);
 
-        response::error("Error with user database occoured while fetching server info. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+        response::error("Cannot establish test connenction to user database. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
         response::result(array('server_info'=>'unknown'));
     }
 
@@ -50,13 +50,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 // Replace current user database configuration and verify connection
 } elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
     try {
+        $request_params = array(
+            'force' => empty(request::body('force', false, false)) ? false : boolval(request::body('force', false, false))
+        );
         $request_data = array(
             'db_host' => request::body('db_host', true),
             'db_port' => request::body('db_port', true),
             'db_username' => request::body('db_username', true),
             'db_password' => request::body('db_password', true, false),
-            'db_name' => request::body('db_name', true),
-            'force' => empty(request::body('force', false, false)) ? false : boolval(request::body('force', false, false))
+            'db_name' => request::body('db_name', true)
         );
     } catch (JsonException $e) {
         response::error('Invalid or missing request data.');
@@ -74,13 +76,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     } catch (mysqli_sql_exception $e) {
         response::error("Cannot connect to user database, check given credentials. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
     
-        if ($request_data['force'] == false) {
+        if ($request_params['force'] == false) {
             response::send(false, 400);
             exit;
         }
     }
 
-    // Insert or update user database configuration
+    // Insert or replace user database configuration
     try {
         db::init()->run_query("INSERT INTO `databases` (`user_id`, `db_host`, `db_port`, `db_username`, `db_password`, `db_name`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `db_host`=?, `db_port`=?, `db_username`=?, `db_password`=?, `db_name`=?", "isissssisss", USER_ID, $request_data['db_host'], $request_data['db_port'], $request_data['db_username'], $request_data['db_password'], $request_data['db_name'], $request_data['db_host'], $request_data['db_port'], $request_data['db_username'], $request_data['db_password'], $request_data['db_name']);
     } catch (exception_sys_link $e) {
