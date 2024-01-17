@@ -20,12 +20,16 @@ $arr_cookie_options = array(
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $request_data = array(
-            'username' => trim(request::body('username')),
-            'password' => request::body('password'),
-            'remember' => empty(request::body('remember')) ? false : boolval(request::body('remember'))
+            'username' => request::body('username', true),
+            'password' => request::body('password', true, false),
+            'remember' => empty(request::body('remember', false, false)) ? false : boolval(request::body('remember', false, false))
         );
     } catch (JsonException $e) {
         response::error('Missing request data.');
+        response::send(false, 400);
+        exit;
+    } catch (exception_request $e) {
+        response::error($e->getMessage());
         response::send(false, 400);
         exit;
     }
@@ -84,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Insert new row to sessions table
     try {
-        db::init()->run_query("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?))", "sissss", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire, $time_now);
+        db::init()->run_query("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?))", "sissii", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire, $time_now);
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
