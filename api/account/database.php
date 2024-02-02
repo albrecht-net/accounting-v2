@@ -51,11 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 } elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
     try {
         $request_params = array(
-            'force' => empty(request::body('force', false, false)) ? false : boolval(request::body('force', false, false))
+            'force' => request::body('force', false, false, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE)
         );
         $request_data = array(
             'db_host' => request::body('db_host', true),
-            'db_port' => request::body('db_port', true),
+            'db_port' => request::body('db_port', true, false, FILTER_VALIDATE_INT),
             'db_username' => request::body('db_username', true),
             'db_password' => request::body('db_password', true, false),
             'db_name' => request::body('db_name', true)
