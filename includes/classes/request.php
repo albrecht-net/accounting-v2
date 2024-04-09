@@ -53,19 +53,19 @@ class request {
             self::load_query_str();
         }
 
-        $_req = self::$_query_str[$name];
+        $_request = self::$_query_str[$name];
 
-        if (isset($_req)) {
+        if (isset($_request)) {
             if ($trim) {
-                $_req = trim($_req);
+                $_request = trim($_request);
             }
 
-            $_req = filter_var($_req, $filter, $options);
+            $_request = filter_var($_request, $filter, $options);
 
-            if (($_req === false && $filter !== FILTER_VALIDATE_BOOL) || ($_req === null && $filter === FILTER_VALIDATE_BOOL)) {
+            if (($_request === false && $filter !== FILTER_VALIDATE_BOOL) || ($_request === null && $filter === FILTER_VALIDATE_BOOL)) {
                 throw new exception_request("Query parameter \"" . $name . "\" does not match required format.");
             } else {
-                return $_req;
+                return $_request;
             }
 
         } elseif ($required) {
@@ -91,19 +91,19 @@ class request {
             self::load_body();
         }
 
-        $_req = self::$_body[$name];
+        $_request = self::$_body[$name];
 
-        if (isset($_req)) {
+        if (isset($_request)) {
             if ($trim) {
-                $_req = trim($_req);
+                $_request = trim($_request);
             }
 
-            $_req = filter_var($_req, $filter, $options);
+            $_request = filter_var($_request, $filter, $options);
 
-            if (($_req === false && $filter !== FILTER_VALIDATE_BOOL) || ($_req === null && $filter === FILTER_VALIDATE_BOOL)) {
+            if (($_request === false && $filter !== FILTER_VALIDATE_BOOL) || ($_request === null && $filter === FILTER_VALIDATE_BOOL)) {
                 throw new exception_request("Query parameter \"" . $name . "\" does not match required format.");
             } else {
-                return $_req;
+                return $_request;
             }
 
         } elseif ($required) {
