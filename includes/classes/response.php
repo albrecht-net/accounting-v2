@@ -3,18 +3,25 @@ class response {
     /**
      * @var array      $_response      Array contain data for response after form submit
      *                                 $_response = [
-     *                                   'error'    => [
-     *                                     'code'     => (integer)
-     *                                     'message'  => (string)
-     *                                   ]
-     *                                   'result'   => [] (array)
-     *                                   'success'  => (bool)
+     *                                   'error'       => [
+     *                                     'code'      => (integer),
+     *                                     'message'   => (string)
+     *                                   ],
+     *                                   'result'      => [] (array)
+     *                                   'result_info' => [
+     *                                     'count'     => (integer),
+     *                                     'total'     => (integer),
+     *                                     'page'      => (integer),
+     *                                     'per_page'  => (integer)
+     *                                   ],
+     *                                   'success'     => (bool)
      *                                 ]
      * 
      */
     private static $_response = array(
         'error' => array(),
         'result' => array(),
+        'result_info' => array(),
         'success' => null
     );
 
@@ -59,6 +66,31 @@ class response {
      */
     public static function result(array $data) {
         self::$_response['result'] = array_merge(self::$_response['result'], $data);
+
+        return;
+    }
+
+    /**
+     * Add result info to response
+     * 
+     * @param integer  $count          Total number of results for the requested service
+     * @param integer  $total          Total results available without any search parameters
+     * @param integer  $page           Optional. Current page within paginated list of results
+     * @param integer  $per_page       Optional. Number of results per page of results
+     * @return void                    No value is returned
+     */
+    public static function result_info(int $count, int $total, int $page = null, int $per_page = null) {
+        self::$_response['result_info']['count'] = $count;
+        self::$_response['result_info']['total'] = $total;
+
+        // Set page counter only if page num and entries per page where given
+        if  (($page != null) && ($per_page != null)) {
+            self::$_response['result_info']['page'] = $page;
+            self::$_response['result_info']['per_page'] = $per_page;
+        } else {
+            self::$_response['result_info']['page'] = null;
+            self::$_response['result_info']['per_page'] = null;
+        }
 
         return;
     }
