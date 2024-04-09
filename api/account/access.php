@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $request_data = array(
             'username' => request::body('username', true),
             'password' => request::body('password', true, false),
-            'remember' => empty(request::body('remember', false, false)) ? false : boolval(request::body('remember', false, false))
+            'remember' => request::body('remember', false, false, FILTER_VALIDATE_BOOL)
         );
     } catch (JsonException $e) {
         response::error('Missing request data.');
