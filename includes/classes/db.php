@@ -8,12 +8,12 @@ class exception_sys_link extends Exception {}
 class exception_usr_link extends Exception {}
 class db {
     /**
-     * @var object $_instance_sys_link Object of the instantiated class for the system database.
+     * @var object     $_instance_sys_link Object of the instantiated class for the system database.
      */
     private static $_instance_sys_link = null;
 
     /**
-     * @var object $_instance_usr_link Object of the instantiated class for the user database.
+     * @var object     $_instance_usr_link Object of the instantiated class for the user database.
      */
     private static $_instance_usr_link = null;
 
@@ -26,8 +26,15 @@ class db {
      * @var object     $_mysqli        Object which represents the connection to the MySQL Server.
      */
     private $_mysqli;
-    
+
+    /**
+     * @var object     $_stmt          Object which represents a prepared statement.
+     */
     private $_stmt;
+
+    /**
+     * @var object     $_result        Object which represents the result set obtained from a query against the database. 
+     */
     private $_result;
 
     /**
