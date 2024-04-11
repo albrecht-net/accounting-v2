@@ -53,9 +53,9 @@ class request {
             self::load_query_str();
         }
 
-        $_request = self::$_query_str[$name];
+        if (isset(self::$_query_str[$name])) {
+            $_request = self::$_query_str[$name];
 
-        if (isset($_request)) {
             if ($trim) {
                 $_request = trim($_request);
             }
@@ -96,9 +96,9 @@ class request {
             self::load_body();
         }
 
-        $_request = self::$_body[$name];
+        if (isset(self::$_body[$name])) {
+            $_request = self::$_body[$name];
 
-        if (isset($_request)) {
             if ($trim) {
                 $_request = trim($_request);
             }
