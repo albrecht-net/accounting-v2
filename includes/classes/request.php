@@ -48,7 +48,7 @@ class request {
      * @throws                         exception_request if the query parameter with $name is required but was not found.
      * @return mixed|void              Query string value, or void if name not found.
      */
-    public static function query_str($name, $required, $trim = true, $filter = FILTER_DEFAULT, $options = 0) {
+    public static function query_str($name, $required, $trim = true, $filter = FILTER_DEFAULT, $options = array()) {
         if (count(self::$_query_str) == 0) {
             self::load_query_str();
         }
@@ -58,6 +58,11 @@ class request {
         if (isset($_request)) {
             if ($trim) {
                 $_request = trim($_request);
+            }
+
+            // Add FILTER_NULL_ON_FAILURE flag as option if filter type is set to FILTER_VALIDATE_BOOL
+            if ($filter === FILTER_VALIDATE_BOOL) {
+                $options['flags'] |= FILTER_NULL_ON_FAILURE;
             }
 
             $_request = filter_var($_request, $filter, $options);
