@@ -15,18 +15,18 @@ require_once ROOT_PATH . 'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_S
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     try {
-        $request_params = array(
+        $path_parameters = array(
+            'id' => request::query_str('identifier', false, false, FILTER_VALIDATE_INT)
+            
+        );
+        $query_parameters = array(
+            'active' => request::query_str('active', false, false, FILTER_VALIDATE_BOOL),
             'direction' => request::body('direction', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(asc|desc)$/"))),
+            'label' => request::query_str('label', false),
             'match' => request::body('match', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(any|all)$/"))),
             'order' => request::body('order', false),
             'page' => request::body('page', false, false, FILTER_VALIDATE_INT),
-            'per_page' => request::body('per_page', false, false, FILTER_VALIDATE_INT)
-            
-        );
-        $request_data = array(
-            'active' => request::query_str('active', false, false, FILTER_VALIDATE_BOOL),
-            'label' => request::query_str('label', false),
-            'id' => request::query_str('identifier', false, false, FILTER_VALIDATE_INT)
+            'per_page' => request::body('per_page', false, false, FILTER_VALIDATE_INT),
         );
     } catch (JsonException $e) {
         response::error('Invalid or missing request data.');
@@ -41,11 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // Query classifications
     try {
         switch (true) {
-            case ($request_data['active'] === true):
+            case ($query_parameters['active'] === true):
                 db::init(USER_ID)->run_query("SELECT * FROM `classification` WHERE `active`='Y'");
                 break;
 
-            case ($request_data['active'] === false):
+            case ($query_parameters['active'] === false):
                 db::init(USER_ID)->run_query("SELECT * FROM `classification` WHERE `active`='N'");
                 break;
 
@@ -76,10 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 // Modify existing classifications
 } elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
     try {
-        $request_params = array(
+        $path_parameters = array(
             'id' => request::query_str('identifier', true)
         );
-        $request_data = array(
+        $request_body = array(
             'label' => request::body('label', false),
             'active' => request::body('active', false)
         );
@@ -94,8 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
 
     try {
-        db::init(USER_ID)->run_query("UPDATE classification SET label=?, active=? WHERE classificationID=?", "ssi", $request_data['label'], $request_data['active'], $request_params['id']);
-        db::init(USER_ID)->run_query("SELECT * FROM classification WHERE  classificationID=?", "i", $request_params['id']);
+        db::init(USER_ID)->run_query("UPDATE classification SET label=?, active=? WHERE classificationID=?", "ssi", $request_body['label'], $request_body['active'], $path_parameters['id']);
+        db::init(USER_ID)->run_query("SELECT * FROM classification WHERE  classificationID=?", "i", $path_parameters['id']);
         response::result(db::init(USER_ID)->fetch_one());
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);

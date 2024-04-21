@@ -50,15 +50,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 // Replace current user database configuration and verify connection
 } elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
     try {
-        $request_params = array(
-            'force' => request::body('force', false, false, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE)
-        );
-        $request_data = array(
+        $request_body = array(
             'db_host' => request::body('db_host', true),
             'db_port' => request::body('db_port', true, false, FILTER_VALIDATE_INT),
             'db_username' => request::body('db_username', true),
             'db_password' => request::body('db_password', true, false),
-            'db_name' => request::body('db_name', true)
+            'db_name' => request::body('db_name', true),
+            'force' => request::body('force', false, false, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE)
         );
     } catch (JsonException $e) {
         response::error('Invalid or missing request data.');
@@ -72,11 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     // Open temporary connection to user database
     try {
-        $_tmp_mysqli = new mysqli($request_data['db_host'], $request_data['db_username'], $request_data['db_password'], $request_data['db_name'], $request_data['db_port']);
+        $_tmp_mysqli = new mysqli($request_body['db_host'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_port']);
     } catch (mysqli_sql_exception $e) {
         response::error("Cannot connect to user database, check given credentials. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
     
-        if ($request_params['force'] == false) {
+        if ($request_body['force'] == false) {
             response::send(false, 400);
             exit;
         }
@@ -84,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     // Insert or replace user database configuration
     try {
-        db::init()->run_query("INSERT INTO `databases` (`user_id`, `db_host`, `db_port`, `db_username`, `db_password`, `db_name`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `db_host`=?, `db_port`=?, `db_username`=?, `db_password`=?, `db_name`=?", "isissssisss", USER_ID, $request_data['db_host'], $request_data['db_port'], $request_data['db_username'], $request_data['db_password'], $request_data['db_name'], $request_data['db_host'], $request_data['db_port'], $request_data['db_username'], $request_data['db_password'], $request_data['db_name']);
+        db::init()->run_query("INSERT INTO `databases` (`user_id`, `db_host`, `db_port`, `db_username`, `db_password`, `db_name`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `db_host`=?, `db_port`=?, `db_username`=?, `db_password`=?, `db_name`=?", "isissssisss", USER_ID, $request_body['db_host'], $request_body['db_port'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_host'], $request_body['db_port'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name']);
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 

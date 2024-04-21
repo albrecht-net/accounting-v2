@@ -19,7 +19,7 @@ $arr_cookie_options = array(
 // Create new access token (login user)
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
-        $request_data = array(
+        $request_body = array(
             'username' => request::body('username', true),
             'password' => request::body('password', true, false),
             'remember' => request::body('remember', false, false, FILTER_VALIDATE_BOOL)
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
     
-    if (strlen($request_data['username']) < 1) {
+    if (strlen($request_body['username']) < 1) {
         response::error('Missing request data.');
         response::send(false, 400);
         exit;
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Query users table by given username
     try {
-        db::init()->run_query("SELECT `id`, `password` FROM `users` WHERE username=? AND `status`='Y'", "s", $request_data['username']);
+        db::init()->run_query("SELECT `id`, `password` FROM `users` WHERE username=? AND `status`='Y'", "s", $request_body['username']);
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
@@ -52,14 +52,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     if (db::init()->count() != 1) {
-        trigger_error("Username '" . $request_data['username'] . "' was not found.", E_USER_NOTICE);
+        trigger_error("Username '" . $request_body['username'] . "' was not found.", E_USER_NOTICE);
         response::error('Invalid user credentials.');
         response::send(false, 401);
         exit;
     }
     
-    if (!password_verify($request_data['password'], db::init()->fetch_one()['password'])) {
-        trigger_error("Invalid credentials provided for user'" . $request_data['username'] . "'.", E_USER_NOTICE);
+    if (!password_verify($request_body['password'], db::init()->fetch_one()['password'])) {
+        trigger_error("Invalid credentials provided for user'" . $request_body['username'] . "'.", E_USER_NOTICE);
         response::error('Invalid user credentials.');
         response::send(false, 401);
         exit;
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $time_now = time();
     
     // Set expire by date
-    if ($request_data['remember']) {
+    if ($request_body['remember']) {
         $time_expire = $time_now + config::get('session.max_lifetime');
     
         // Set cookie expire timestamp
