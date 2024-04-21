@@ -23,6 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             'active' => request::query_str('active', false, false, FILTER_VALIDATE_BOOL),
             'direction' => request::body('direction', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(asc|desc)$/"))),
             'label' => request::query_str('label', false),
+            'label.contains' => request::query_str('label', false),
+            'label.endswith' => request::query_str('label', false),
+            'label.startswith' => request::query_str('label', false),
             'match' => request::body('match', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(any|all)$/"))),
             'order' => request::body('order', false),
             'page' => request::body('page', false, false, FILTER_VALIDATE_INT),
@@ -40,18 +43,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     // Query classifications
     try {
+        $query = "SELECT * FROM `classification`";
+
         switch (true) {
-            case ($query_parameters['active'] === true):
-                db::init(USER_ID)->run_query("SELECT * FROM `classification` WHERE `active`='Y'");
+            case (isset($path_parameters['id'])):
+                $sql_conditions = "`classificationID`=?";
+                $sql_parameters[0] .= "i";
+                $sql_parameters[] = $path_parameters['id'];
                 break;
+
+            case ($query_parameters['active'] === true):
+                $sql_conditions = "``active`='Y'";
 
             case ($query_parameters['active'] === false):
-                db::init(USER_ID)->run_query("SELECT * FROM `classification` WHERE `active`='N'");
-                break;
+                $sql_conditions = "``active`='N'";
 
-            default:
-                db::init(USER_ID)->run_query("SELECT * FROM `classification`");
-                break;
+            case (isset($query_parameters['label'])):
+                $sql_conditions = "`label`=?";
+                $sql_parameters[0] .= "s";
+                $sql_parameters[] = $query_parameters['label'];
+
+            case (isset($query_parameters['label.contains'])):
+                $sql_conditions = "`label`=?";
+                $sql_parameters[0] .= "s";
+                $sql_parameters[] = "%" . $query_parameters['label.contains'] . "%";
+
         }
 
         response::result(db::init(USER_ID)->fetch_array());
