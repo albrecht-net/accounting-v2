@@ -45,29 +45,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     try {
         $query = "SELECT * FROM `classification`";
 
+        $sql_conditions = [];
+        $sql_parameters = [''];
+
         switch (true) {
             case (isset($path_parameters['id'])):
-                $sql_conditions = "`classificationID`=?";
+                $sql_conditions[] = "`classificationID`=?";
                 $sql_parameters[0] .= "i";
                 $sql_parameters[] = $path_parameters['id'];
                 break;
 
             case ($query_parameters['active'] === true):
-                $sql_conditions = "``active`='Y'";
+                $sql_conditions[] = "``active`='Y'";
 
             case ($query_parameters['active'] === false):
-                $sql_conditions = "``active`='N'";
+                $sql_conditions[] = "``active`='N'";
 
             case (isset($query_parameters['label'])):
-                $sql_conditions = "`label`=?";
+                $sql_conditions[] = "`label`=?";
                 $sql_parameters[0] .= "s";
                 $sql_parameters[] = $query_parameters['label'];
 
             case (isset($query_parameters['label.contains'])):
-                $sql_conditions = "`label`=?";
+                $sql_conditions[] = "`label` LIKE ?";
                 $sql_parameters[0] .= "s";
                 $sql_parameters[] = "%" . $query_parameters['label.contains'] . "%";
 
+        }
+
+        if (!empty($sql_conditions)) {
+            switch ($query_parameters['match']) {
+                case ("any"):
+                    $query .= " WHERE " . implode(' OR ', $sql_conditions);
+                    break;
+                case ("all"):
+                default:
+                    $query .= " WHERE " . implode(' AND ', $sql_conditions);
+                    break;
+            }
         }
 
         response::result(db::init(USER_ID)->fetch_array());
