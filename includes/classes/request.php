@@ -45,7 +45,7 @@ class request {
      * @param bool     $trim           Optional. Strip whitespace from the beginning and end before return query value.
      * @param integer  $filter         Optional. The ID of the filter to apply before return value. If omitted, FILTER_DEFAULT will be used,
      *                                 which is equivalent to FILTER_UNSAFE_RAW.
-     * @param array|int $options       Optional. Associative array of options or bitwise disjunction of flags.
+     * @param array    $options       Optional. Associative array of options or bitwise disjunction of flags.
      *                                 The default value provided in ['options']['default'] will not overwrite the value if the filter fails.
      * @throws                         exception_request if the query parameter with $name is required but was not found.
      * @return mixed|void              Query string value, or void if name not found.
@@ -102,12 +102,12 @@ class request {
      * @param bool     $trim           Optional. Strip whitespace from the beginning and end before return query value.
      * @param integer  $filter         Optional. The ID of the filter to apply before return value. If omitted, FILTER_DEFAULT will be used,
      *                                 which is equivalent to FILTER_UNSAFE_RAW.
-     * @param array|int $options       Optional. Associative array of options or bitwise disjunction of flags.
+     * @param array    $options       Optional. Associative array of options or bitwise disjunction of flags.
      *                                 The default value provided in ['options']['default'] will not overwrite the value if the filter fails.
      * @throws                         exception_request if the query parameter with $name is required but was not found.
      * @return mixed|void              Request body value, or void if name not found.
      */
-    public static function body($name, $required, $trim = true, $filter = FILTER_DEFAULT, $options = 0) {
+    public static function body($name, $required, $trim = true, $filter = FILTER_DEFAULT, $options = array()) {
         if (count(self::$_body) == 0) {
             self::load_body();
         }
