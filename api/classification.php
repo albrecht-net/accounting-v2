@@ -16,18 +16,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     try {
         $path_parameters = array(
-            'id' => request::query_str('identifier', false, false, FILTER_VALIDATE_INT)
+            'id' => request::query_str('id', false, false, FILTER_VALIDATE_INT)
             
         );
         $query_parameters = array(
-            'active' => request::query_str('active', false, false, FILTER_VALIDATE_BOOL),
-            'direction' => request::body('direction', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(asc|desc)$/"))),
-            'label' => request::query_str('label', false),
-            'label.contains' => request::query_str('label', false),
-            'label.endswith' => request::query_str('label', false),
-            'label.startswith' => request::query_str('label', false),
-            'match' => request::body('match', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(any|all)$/"))),
-            'order' => request::body('order', false),
+            'active' => request::body('active', false, false, FILTER_VALIDATE_BOOL),
+            'direction' => request::body('direction', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(asc|desc)$/i", 'default' => 'asc'))),
+            'label' => request::body('label', false),
+            'label.contains' => request::body('label', false),
+            'label.endswith' => request::body('label', false),
+            'label.startswith' => request::body('label', false),
+            'match' => request::body('match', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(any|all)$/", 'default' => 'all'))),
+            'order' => request::body('order', false, true, FILTER_DEFAULT, array('options' => array('default' => 'classificationID'))),
             'page' => request::body('page', false, false, FILTER_VALIDATE_INT),
             'per_page' => request::body('per_page', false, false, FILTER_VALIDATE_INT),
         );
@@ -73,6 +73,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
         }
 
+        // https://phpize.online/sql/mariadb/083bbb69b0580e6c1dc2bd285c7aef9d/php/php82/3f537ca9c7163b6358ce718117071a6b/
+        // db::init(USER_ID)->run_query($query . "WHERE", )
+
         if (!empty($sql_conditions)) {
             switch ($query_parameters['match']) {
                 case ("any"):
@@ -84,6 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                     break;
             }
         }
+
+        $query .= " ORDER BY " . $query_parameters['order'] . " " . strtoupper($query_parameters['direction']);
 
         response::result(db::init(USER_ID)->fetch_array());
         response::result_info(db::init(USER_ID)->count(), -1);
