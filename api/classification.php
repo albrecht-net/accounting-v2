@@ -23,13 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             'active' => request::body('active', false, false, FILTER_VALIDATE_BOOL),
             'direction' => request::body('direction', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(asc|desc)$/i", 'default' => 'asc'))),
             'label' => request::body('label', false),
-            'label.contains' => request::body('label', false),
-            'label.endswith' => request::body('label', false),
-            'label.startswith' => request::body('label', false),
+            'label.contains' => request::body('label.contains', false),
+            'label.endswith' => request::body('label.endswith', false),
+            'label.startswith' => request::body('label.startswith', false),
             'match' => request::body('match', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(any|all)$/", 'default' => 'all'))),
             'order' => request::body('order', false, true, FILTER_DEFAULT, array('options' => array('default' => 'classificationID'))),
-            'page' => request::body('page', false, false, FILTER_VALIDATE_INT),
-            'per_page' => request::body('per_page', false, false, FILTER_VALIDATE_INT),
+            'page' => request::body('page', false, false, FILTER_VALIDATE_INT, array('options' => array('default' => 1))),
+            'per_page' => request::body('per_page', false, false, FILTER_VALIDATE_INT, array('options' => array('default' => 100))),
         );
     } catch (JsonException $e) {
         response::error('Invalid or missing request data.');
@@ -43,8 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     // Query classifications
     try {
+        // Base query
         $query = "SELECT * FROM `classification`";
 
+        // Where conditions
         $sql_conditions = [];
         $sql_parameters = [''];
 
@@ -71,10 +73,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 $sql_parameters[0] .= "s";
                 $sql_parameters[] = "%" . $query_parameters['label.contains'] . "%";
 
-        }
+            case (isset($query_parameters['label.endswith'])):
+                $sql_conditions[] = "`label` LIKE ?";
+                $sql_parameters[0] .= "s";
+                $sql_parameters[] = "%" . $query_parameters['label.endswith'];
 
-        // https://phpize.online/sql/mariadb/083bbb69b0580e6c1dc2bd285c7aef9d/php/php82/3f537ca9c7163b6358ce718117071a6b/
-        // db::init(USER_ID)->run_query($query . "WHERE", )
+            case (isset($query_parameters['label.startswith'])):
+                $sql_conditions[] = "`label` LIKE ?";
+                $sql_parameters[0] .= "s";
+                $sql_parameters[] = $query_parameters['label.startswith']. "%";
+
+        }
 
         if (!empty($sql_conditions)) {
             switch ($query_parameters['match']) {
@@ -88,10 +97,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             }
         }
 
+        // Order resultset
         $query .= " ORDER BY " . $query_parameters['order'] . " " . strtoupper($query_parameters['direction']);
 
+        // Pagination of resultset if page and per_page parameters are > 0
+        if (($query_parameters['page'] > 0) and ($query_parameters['per_page'] > 0)) {
+            $_offset = ($query_parameters['page'] - 1) * $query_parameters['per_page'];
+            $_row_count = $query_parameters['per_page'];
+            $query .= " LIMIT " . $_offset . ", " . $_row_count;
+        }
+
+        db::init(USER_ID)->run_query($query, $sql_parameters[0], ...array_slice($sql_parameters, 1));
+
         response::result(db::init(USER_ID)->fetch_array());
-        response::result_info(db::init(USER_ID)->count(), -1);
+        response::result_info(db::init(USER_ID)->count(), -1, $query_parameters['page'], $query_parameters['per_page']);
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
