@@ -172,7 +172,7 @@ class db {
             return false;
         }
 
-        if ($types !== null) {
+        if (!empty($types)) {
             if (!$this->_stmt->bind_param($types, $var, ...$vars)) {
                 $this->errno = $this->_stmt->errno;
                 $this->error = $this->_stmt->error;
