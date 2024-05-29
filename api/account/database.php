@@ -68,6 +68,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit;
     }
 
+    // Deactivate error reporting
+    $driver = new mysqli_driver();
+    $driver->report_mode = MYSQLI_REPORT_STRICT;
+
     // Open temporary connection to user database
     try {
         $_tmp_mysqli = new mysqli($request_body['db_host'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_port']);
