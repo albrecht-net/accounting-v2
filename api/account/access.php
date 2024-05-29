@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $request_body = array(
             'username' => request::body('username', true),
             'password' => request::body('password', true, false),
-            'remember' => request::body('remember', false, false, FILTER_VALIDATE_BOOL)
+            'remember' => request::body('remember', false, false, FILTER_VALIDATE_BOOL, array('options' => array('default' => false)))
         );
     } catch (JsonException $e) {
         response::error('Missing request data.');
@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif (!empty($_COOKIE['sid'])) {
         $sid = $_COOKIE['sid'];
     } else {
-        response::error('Missing session id, provide session id over authorization header or cookie.');
+        response::error('Missing session id, provide session id using authorization header or cookie.');
         response::send(false, 401, 'WWW-Authenticate: Bearer');
         exit;
     }
