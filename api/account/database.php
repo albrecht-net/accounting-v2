@@ -75,9 +75,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // Open temporary connection to user database
     try {
         $_tmp_mysqli = new mysqli($request_body['db_host'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_port']);
+        response::result(array('server_info'=>$_tmp_mysqli->server_info));
     } catch (mysqli_sql_exception $e) {
         response::error("Cannot connect to user database, check given credentials. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
-    
+        response::result(array('server_info'=>'unknown'));
+
         if ($request_body['force'] == false) {
             response::send(false, 400);
             exit;
