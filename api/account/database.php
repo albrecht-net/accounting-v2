@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             'db_username' => request::body('db_username', true),
             'db_password' => request::body('db_password', true, false),
             'db_name' => request::body('db_name', true),
-            'force' => request::body('force', false, false, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE)
+            'force' => request::body('force', false, false, FILTER_VALIDATE_BOOL, array('options' => array('default' => false)))
         );
     } catch (JsonException $e) {
         response::error('Invalid or missing request data.');
