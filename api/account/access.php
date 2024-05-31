@@ -24,83 +24,73 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             'password' => request::body('password', true, false),
             'remember' => request::body('remember', false, false, FILTER_VALIDATE_BOOL, array('options' => array('default' => false)))
         );
+
+        if (strlen($request_body['username']) < 1) {
+            throw new Exception('Username cannot be an empty string.');
+        }
+        
+        // Query users table by given username
+        db::init()->run_query("SELECT `id`, `password` FROM `users` WHERE username=? AND `status`='Y'", "s", $request_body['username']);
+
+        if (db::init()->count() != 1) {
+            trigger_error("Username '" . $request_body['username'] . "' was not found.", E_USER_NOTICE);
+            response::error('Invalid user credentials.');
+            response::send(false, 401);
+            exit;
+        }
+        
+        if (!password_verify($request_body['password'], db::init()->fetch_one()['password'])) {
+            trigger_error("Invalid credentials provided for user'" . $request_body['username'] . "'.", E_USER_NOTICE);
+            response::error('Invalid user credentials.');
+            response::send(false, 401);
+            exit;
+        }
+        
+        $time_now = time();
+        
+        // Set expire by date
+        if ($request_body['remember']) {
+            $time_expire = $time_now + config::get('session.max_lifetime');
+        
+            // Set cookie expire timestamp
+            $arr_cookie_options['expires'] = $time_expire;
+        } else {
+            $time_expire = $time_now + config::get('session.inactive_time');
+        
+            // Set cookie expire timestamp
+            $arr_cookie_options['expires'] = 0;
+        }
+        
+        // Generate session id
+        $sid = bin2hex(random_bytes(32));
+        
+        // Get user agent
+        $user_agent = explode(" ", $_SERVER['HTTP_USER_AGENT'], 2)[0];
+        
+        // Insert new row to sessions table
+        db::init()->run_query("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?))", "sissii", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire, $time_now);
+        
+        // Send cookie with additional parameters
+        setcookie('sid', $sid, $arr_cookie_options);
+    
+        response::result(array('session_id' => $sid));
+
     } catch (JsonException $e) {
         response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
         exit;
-    } catch (exception_request $e) {
+    } catch (exception_request | Exception $e) {
         response::error($e->getMessage());
         response::send(false, 400);
         exit;
-    }
-    
-    if (strlen($request_body['username']) < 1) {
-        response::error('Missing request data.');
-        response::send(false, 400);
-        exit;
-    }
-    
-    // Query users table by given username
-    try {
-        db::init()->run_query("SELECT `id`, `password` FROM `users` WHERE username=? AND `status`='Y'", "s", $request_body['username']);
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
-
-        response::error('Internal application error occurred.');
-        response::send(false, 500);
-        exit;
-    }
     
-    if (db::init()->count() != 1) {
-        trigger_error("Username '" . $request_body['username'] . "' was not found.", E_USER_NOTICE);
-        response::error('Invalid user credentials.');
-        response::send(false, 401);
-        exit;
-    }
-    
-    if (!password_verify($request_body['password'], db::init()->fetch_one()['password'])) {
-        trigger_error("Invalid credentials provided for user'" . $request_body['username'] . "'.", E_USER_NOTICE);
-        response::error('Invalid user credentials.');
-        response::send(false, 401);
-        exit;
-    }
-    
-    $time_now = time();
-    
-    // Set expire by date
-    if ($request_body['remember']) {
-        $time_expire = $time_now + config::get('session.max_lifetime');
-    
-        // Set cookie expire timestamp
-        $arr_cookie_options['expires'] = $time_expire;
-    } else {
-        $time_expire = $time_now + config::get('session.inactive_time');
-    
-        // Set cookie expire timestamp
-        $arr_cookie_options['expires'] = 0;
-    }
-    
-    // Generate session id
-    $sid = bin2hex(random_bytes(32));
-    
-    // Get user agent
-    $user_agent = explode(" ", $_SERVER['HTTP_USER_AGENT'], 2)[0];
-    
-    // Insert new row to sessions table
-    try {
-        db::init()->run_query("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?))", "sissii", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire, $time_now);
-    } catch (exception_sys_link $e) {
-        trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
-
         response::error('Internal application error occurred.');
         response::send(false, 500);
         exit;
     }
 
-    // Send cookie with additional parameters
-    setcookie('sid', $sid, $arr_cookie_options);
-
-    response::result(array('session_id' => $sid));
     response::send(true, 200);
     exit;
 
