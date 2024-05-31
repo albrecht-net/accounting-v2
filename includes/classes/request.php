@@ -1,5 +1,5 @@
 <?php
-class exception_request extends Exception {}
+class exception_request extends InvalidArgumentException {}
 class request {
     /**
      * @var array      $_query_str     Array with values from request query string
