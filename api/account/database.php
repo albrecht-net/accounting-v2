@@ -25,13 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
         // Get server_info from journal db
         response::result(array('server_info'=>db::init(USER_ID)->server_info));
-    } catch (exception_sys_link $e) {
+    } catch (DbSysLinkException $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
         response::error('Internal application error occurred.');
         response::send(false, 500);
         exit;
-    } catch (exception_usr_link $e) {
+    } catch (DbUsrLinkException $e) {
         trigger_error('uid: ' . USER_ID . " #" . $e->getCode() . " - " . $e->getMessage(), E_USER_NOTICE);
 
         response::error("Cannot establish test connenction to user database. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             response::send(false, 400);
             exit;
         }
-    } catch (exception_sys_link $e) {
+    } catch (DbSysLinkException $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
         response::error('Internal application error occurred.');
@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 } elseif ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
     try {
         db::init()->run_query("DELETE FROM `databases` WHERE user_id=?", "i", USER_ID);
-    } catch (exception_sys_link $e) {
+    } catch (DbSysLinkException $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
         response::error('Internal application error occurred.');

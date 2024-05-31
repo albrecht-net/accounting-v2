@@ -65,7 +65,7 @@ function userAuthenticate(string $sid = null):int {
         // Return user id
         return $_uid;
 
-    } catch (exception_sys_link $e) {
+    } catch (DbSysLinkException $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
         response::error('Internal application error occurred.');

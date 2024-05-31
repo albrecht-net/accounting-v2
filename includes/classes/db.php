@@ -4,8 +4,8 @@
 $driver = new mysqli_driver();
 $driver->report_mode = MYSQLI_REPORT_OFF;
 
-class exception_sys_link extends RuntimeException {}
-class exception_usr_link extends RuntimeException {}
+class DbSysLinkException extends RuntimeException {}
+class DbUsrLinkException extends RuntimeException {}
 class db {
     /**
      * @var object     $_instance_sys_link Object of the instantiated class for the system database.
@@ -98,7 +98,7 @@ class db {
      * Open a new connection to the MySQL server for system database.
      * For the database credentials the entries from the config will be used.
      * 
-     * @throws                         exception_sys_link if some connection error occoured
+     * @throws                         DbSysLinkException if some connection error occoured
      * @return void                    No value is returned
      */
     private function _connect_sys_db() {
@@ -106,7 +106,7 @@ class db {
         $this->errno = $this->_mysqli->connect_errno;
 
         if ($this->_mysqli->connect_errno) {
-            throw new exception_sys_link("Cannot connect to system database, check config.php. MySQL said: #" . mysqli_connect_errno() . " - " . mysqli_connect_error(), mysqli_connect_errno());
+            throw new DbSysLinkException("Cannot connect to system database, check config.php. MySQL said: #" . mysqli_connect_errno() . " - " . mysqli_connect_error(), mysqli_connect_errno());
             return;
         }
 
@@ -121,14 +121,14 @@ class db {
      * Open a new connection to the MySQL server for user database.
      * For the database credentials the userID (stored in $_mode) will be used.
      * 
-     * @throws                         exception_usr_link if no user database credentials where found for the selected user or some connection error occoured while connection to the user database
+     * @throws                         DbUsrLinkException if no user database credentials where found for the selected user or some connection error occoured while connection to the user database
      * @return void                    No value is returned
      */
     private function _connect_usr_db() {
         self::$_instance_sys_link->run_query("SELECT db_host, db_port, db_username, db_password, db_name FROM `databases` WHERE user_id=? LIMIT 1", "i", $this->_mode);
 
         if (self::$_instance_sys_link->count() != 1) {
-            throw new exception_usr_link("No user database credentials found for current user.");
+            throw new DbUsrLinkException("No user database credentials found for current user.");
             return;
         }
         $result = self::$_instance_sys_link->fetch_array()[0];
@@ -136,7 +136,7 @@ class db {
         $this->errno = $this->_mysqli->connect_errno;
 
         if ($this->_mysqli->connect_errno) {
-            throw new exception_usr_link(mysqli_connect_error(), mysqli_connect_errno());
+            throw new DbUsrLinkException(mysqli_connect_error(), mysqli_connect_errno());
             return;
         }
 
@@ -154,8 +154,8 @@ class db {
      * @param string   $types          Optional. A string that contains one or more characters which specify the types for the corresponding bind variables.
      * @param mixed    $var            Optional (Required if $types is set). Parameter. The number of variables and length of string $types must match the parameters in the statement.
      * @param mixed    $vars           Optional (Required if $types is set). Additional parameters. The number of variables and length of string $types must match the parameters in the statement.
-     * @throws                         exception_sys_link if mode selector is equal to -1
-     * @throws                         exception_usr_link if mode selector is not equal to -1
+     * @throws                         DbSysLinkException if mode selector is equal to -1
+     * @throws                         DbUsrLinkException if mode selector is not equal to -1
      * @return bool                    Returns true on success or false on failure.
      */
     public function run_query(string $query, string $types = null, $var = null, ...$vars) {
@@ -164,9 +164,9 @@ class db {
             $this->error = $this->_stmt->error;
 
             if ($this->_mode == -1) {
-                throw new exception_sys_link($this->_stmt->error, $this->_stmt->errno);
+                throw new DbSysLinkException($this->_stmt->error, $this->_stmt->errno);
             } else {
-                throw new exception_usr_link($this->_stmt->error, $this->_stmt->errno);
+                throw new DbUsrLinkException($this->_stmt->error, $this->_stmt->errno);
             }
 
             return false;
@@ -178,9 +178,9 @@ class db {
                 $this->error = $this->_stmt->error;
 
                 if ($this->_mode == -1) {
-                    throw new exception_sys_link($this->_stmt->error, $this->_stmt->errno);
+                    throw new DbSysLinkException($this->_stmt->error, $this->_stmt->errno);
                 } else {
-                    throw new exception_usr_link($this->_stmt->error, $this->_stmt->errno);
+                    throw new DbUsrLinkException($this->_stmt->error, $this->_stmt->errno);
                 }
 
                 return false;
@@ -192,9 +192,9 @@ class db {
             $this->error = $this->_stmt->error;
 
             if ($this->_mode == -1) {
-                throw new exception_sys_link($this->_stmt->error, $this->_stmt->errno);
+                throw new DbSysLinkException($this->_stmt->error, $this->_stmt->errno);
             } else {
-                throw new exception_usr_link($this->_stmt->error, $this->_stmt->errno);
+                throw new DbUsrLinkException($this->_stmt->error, $this->_stmt->errno);
             }
 
             return false;
@@ -205,9 +205,9 @@ class db {
             $this->error = $this->_stmt->error;
 
             if ($this->_mode == -1) {
-                throw new exception_sys_link($this->_stmt->error, $this->_stmt->errno);
+                throw new DbSysLinkException($this->_stmt->error, $this->_stmt->errno);
             } else {
-                throw new exception_usr_link($this->_stmt->error, $this->_stmt->errno);
+                throw new DbUsrLinkException($this->_stmt->error, $this->_stmt->errno);
             }
 
             return false;

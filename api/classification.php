@@ -111,13 +111,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
         response::result(db::init(USER_ID)->fetch_array());
         response::result_info(db::init(USER_ID)->count(), -1, $query_parameters['page'], $query_parameters['per_page']);
-    } catch (exception_sys_link $e) {
+    } catch (DbSysLinkException $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
         response::error('Internal application error occurred.');
         response::send(false, 500);
         exit;
-    } catch (exception_usr_link $e) {
+    } catch (DbUsrLinkException $e) {
         trigger_error('uid: ' . USER_ID . " #" . $e->getCode() . " - " . $e->getMessage(), E_USER_NOTICE);
 
         response::error("Error with user database occoured. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
@@ -152,13 +152,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         db::init(USER_ID)->run_query("UPDATE classification SET label=?, active=? WHERE classificationID=?", "ssi", $request_body['label'], $request_body['active'], $path_parameters['id']);
         db::init(USER_ID)->run_query("SELECT * FROM classification WHERE  classificationID=?", "i", $path_parameters['id']);
         response::result(db::init(USER_ID)->fetch_one());
-    } catch (exception_sys_link $e) {
+    } catch (DbSysLinkException $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
         response::error('Internal application error occurred.');
         response::send(false, 500);
         exit;
-    } catch (exception_usr_link $e) {
+    } catch (DbUsrLinkException $e) {
         trigger_error('uid: ' . USER_ID . " #" . $e->getCode() . " - " . $e->getMessage(), E_USER_NOTICE);
 
         response::error("Error with user database occoured. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());

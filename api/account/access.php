@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         response::error($e->getMessage());
         response::send(false, 400);
         exit;
-    } catch (exception_sys_link $e) {
+    } catch (DbSysLinkException $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
     
         response::error('Internal application error occurred.');
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Get row matching the given session id
     try {
         db::init()->run_query("UPDATE `sessions` SET `expiry_date` = current_timestamp() WHERE `sessions`.`id` = ? AND `expiry_date` > NOW()", "s", $sid);
-    } catch (exception_sys_link $e) {
+    } catch (DbSysLinkException $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
         response::error('Internal application error occurred.');
