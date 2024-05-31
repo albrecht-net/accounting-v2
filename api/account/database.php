@@ -14,22 +14,16 @@ require_once ROOT_PATH . 'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_S
 // Get current user database configuration and verify connection
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     try {
+        // Get journal database credentials (except password) 
         db::init()->run_query("SELECT `db_host`, `db_port`, `db_username`, `db_name` FROM `databases` WHERE user_id=?", "i", USER_ID);
-    } catch (exception_sys_link $e) {
-        trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
-        response::error('Internal application error occurred.');
-        response::send(false, 500);
-        exit;
-    }
+        if (db::init()->count() != 1 ) {
+            response::result(array('db_host'=>null, 'db_port'=>null, 'db_username'=>null, 'db_name'=>null));
+        } else{
+            response::result(db::init()->fetch_one());
+        }
 
-    if (db::init()->count() != 1 ) {
-        response::result(array('db_host'=>null, 'db_port'=>null, 'db_username'=>null, 'db_name'=>null));
-    } else{
-        response::result(db::init()->fetch_one());
-    }
-
-    try {
+        // Get server_info from journal db
         response::result(array('server_info'=>db::init(USER_ID)->server_info));
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
@@ -58,6 +52,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             'db_name' => request::body('db_name', true),
             'force' => request::body('force', false, false, FILTER_VALIDATE_BOOL, array('options' => array('default' => false)))
         );
+
+        // Deactivate error reporting
+        $driver = new mysqli_driver();
+        $driver->report_mode = MYSQLI_REPORT_STRICT;
+        
+        // Open temporary connection to user database and get server_info
+        $_tmp_mysqli = new mysqli($request_body['db_host'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_port']);
+        response::result(array('server_info'=>$_tmp_mysqli->server_info));
+        
+        // Insert or replace user database configuration
+        db::init()->run_query("INSERT INTO `databases` (`user_id`, `db_host`, `db_port`, `db_username`, `db_password`, `db_name`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `db_host`=?, `db_port`=?, `db_username`=?, `db_password`=?, `db_name`=?", "isissssisss", USER_ID, $request_body['db_host'], $request_body['db_port'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_host'], $request_body['db_port'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name']);
     } catch (JsonException $e) {
         response::error('Invalid or missing request data.');
         response::send(false, 400);
@@ -66,29 +71,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::error($e->getMessage());
         response::send(false, 400);
         exit;
-    }
-
-    // Deactivate error reporting
-    $driver = new mysqli_driver();
-    $driver->report_mode = MYSQLI_REPORT_STRICT;
-
-    // Open temporary connection to user database
-    try {
-        $_tmp_mysqli = new mysqli($request_body['db_host'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_port']);
-        response::result(array('server_info'=>$_tmp_mysqli->server_info));
     } catch (mysqli_sql_exception $e) {
         response::error("Cannot connect to user database, check given credentials. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
         response::result(array('server_info'=>'unknown'));
-
+    
         if ($request_body['force'] == false) {
             response::send(false, 400);
             exit;
         }
-    }
-
-    // Insert or replace user database configuration
-    try {
-        db::init()->run_query("INSERT INTO `databases` (`user_id`, `db_host`, `db_port`, `db_username`, `db_password`, `db_name`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `db_host`=?, `db_port`=?, `db_username`=?, `db_password`=?, `db_name`=?", "isissssisss", USER_ID, $request_body['db_host'], $request_body['db_port'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_host'], $request_body['db_port'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name']);
     } catch (exception_sys_link $e) {
         trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
 
