@@ -80,7 +80,7 @@ class request {
             $_request = filter_var($_request, $filter, $options);
 
             if (($_request === false && $filter !== FILTER_VALIDATE_BOOL) || ($_request === null && $filter === FILTER_VALIDATE_BOOL)) {
-                throw new exception_request("Query parameter \"" . $name . "\" does not match required format.");
+                throw new exception_request("Query parameter '" . $name . "' does not match required format.");
             }
 
         // Throw exception if value was not set but is required
@@ -147,7 +147,7 @@ class request {
 
         // Throw exception if value was not set but is required
         } elseif ($required) {
-            throw new exception_request("Query parameter \"" . $name . "\" was not provided in request body but is required.");
+            throw new exception_request("Query parameter '" . $name . "' was not provided in request body but is required.");
 
         // Return default value if value was not set
         } elseif (isset($options['options']['default'])) {
