@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             'per_page' => request::body('per_page', false, false, FILTER_VALIDATE_INT, array('options' => array('default' => 100))),
         );
     } catch (JsonException $e) {
-        response::error('Invalid or missing request data.');
+        response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
         exit;
     } catch (exception_request $e) {
@@ -139,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             'active' => request::body('active', false)
         );
     } catch (JsonException $e) {
-        response::error('Invalid or missing request data.');
+        response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
         exit;
     } catch (exception_request $e) {

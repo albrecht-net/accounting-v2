@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             'remember' => request::body('remember', false, false, FILTER_VALIDATE_BOOL, array('options' => array('default' => false)))
         );
     } catch (JsonException $e) {
-        response::error('Missing request data.');
+        response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
         exit;
     } catch (exception_request $e) {

@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         // Insert or replace user database configuration
         db::init()->run_query("INSERT INTO `databases` (`user_id`, `db_host`, `db_port`, `db_username`, `db_password`, `db_name`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `db_host`=?, `db_port`=?, `db_username`=?, `db_password`=?, `db_name`=?", "isissssisss", USER_ID, $request_body['db_host'], $request_body['db_port'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_host'], $request_body['db_port'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name']);
     } catch (JsonException $e) {
-        response::error('Invalid or missing request data.');
+        response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
         exit;
     } catch (exception_request $e) {
