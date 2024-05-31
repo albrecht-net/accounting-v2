@@ -10,7 +10,11 @@ class DbSysLinkException extends RuntimeException {
     }
 }
 
-class DbUsrLinkException extends RuntimeException {}
+class DbUsrLinkException extends RuntimeException {
+    public function __construct(string $message = "", int $code = 0, ?Throwable $previous = null) {
+        trigger_error("JournalDatabaseException #" . $code . " - UID: "  . USER_ID . " - " . $message, E_USER_NOTICE);
+        parent::__construct($message, $code, $previous);
+    }}
 
 class db {
     /**
