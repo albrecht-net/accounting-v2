@@ -63,6 +63,11 @@ class request {
                 $_request = trim($_request);
             }
 
+            // Initalize filter flags to 0 if not set
+            if (!isset($options['flags'])) {
+                $options['flags'] = 0;
+            }
+
             // Add FILTER_NULL_ON_FAILURE flag as option if filter type is set to FILTER_VALIDATE_BOOL
             // Overwrite default value to catch filter failures
             if ($filter === FILTER_VALIDATE_BOOL) {
@@ -118,6 +123,11 @@ class request {
 
             if ($trim) {
                 $_request = trim($_request);
+            }
+
+            // Initalize filter flags to 0 if not set
+            if (!isset($options['flags'])) {
+                $options['flags'] = 0;
             }
 
             // Add FILTER_NULL_ON_FAILURE flag as option if filter type is set to FILTER_VALIDATE_BOOL
