@@ -73,8 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
         response::send(false, 400);
         exit;
     } catch (DbSysLinkException $e) {
-        trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
-    
         response::error('Internal application error occurred.');
         response::send(false, 500);
         exit;

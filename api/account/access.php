@@ -79,13 +79,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
         exit;
-    } catch (RequestException | Exception $e) {
+    } catch (RequestException $e) {
         response::error($e->getMessage());
         response::send(false, 400);
         exit;
     } catch (DbSysLinkException $e) {
-        trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
-    
         response::error('Internal application error occurred.');
         response::send(false, 500);
         exit;
@@ -116,8 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         db::init()->run_query("UPDATE `sessions` SET `expiry_date` = current_timestamp() WHERE `sessions`.`id` = ? AND `expiry_date` > NOW()", "s", $sid);
     } catch (DbSysLinkException $e) {
-        trigger_error("#" . $e->getCode() . " - " . $e->getMessage(), E_USER_ERROR);
-
         response::error('Internal application error occurred.');
         response::send(false, 500);
         return false;
