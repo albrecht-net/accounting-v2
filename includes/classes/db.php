@@ -1,11 +1,17 @@
 <?php
-
 // Deactivate error reporting
 $driver = new mysqli_driver();
-$driver->report_mode = MYSQLI_REPORT_OFF;
+$driver->report_mode = MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT;
 
-class DbSysLinkException extends RuntimeException {}
+class DbSysLinkException extends RuntimeException {
+    public function __construct(string $message = "", int $code = 0, ?Throwable $previous = null) {
+        trigger_error("SystemDatabaseException #" . $code . " - " . $message, E_USER_ERROR);
+        parent::__construct($message, $code, $previous);
+    }
+}
+
 class DbUsrLinkException extends RuntimeException {}
+
 class db {
     /**
      * @var object     $_instance_sys_link Object of the instantiated class for the system database.
@@ -41,16 +47,6 @@ class db {
      * @var string     $server_info    Version of the MySQL server.
      */
     public $server_info;
-
-    /**
-     * @var int        $errno          Error code for the most recent function call.
-     */
-    public $errno;
-
-    /**
-     * @var string     $error          Description for last statement error.
-     */
-    public $error;
 
     /**
      * Entrypoint for every mysql connection.
@@ -102,17 +98,15 @@ class db {
      * @return void                    No value is returned
      */
     private function _connect_sys_db() {
-        $this->_mysqli = new mysqli(config::get('db.host'), config::get('db.username'), config::get('db.password'), config::get('db.name'), config::get('db.port'));
-        $this->errno = $this->_mysqli->connect_errno;
+        try {
+            $this->_mysqli = new mysqli(config::get('db.host'), config::get('db.username'), config::get('db.password'), config::get('db.name'), config::get('db.port'));
 
-        if ($this->_mysqli->connect_errno) {
-            throw new DbSysLinkException("Cannot connect to system database, check config.php. MySQL said: #" . mysqli_connect_errno() . " - " . mysqli_connect_error(), mysqli_connect_errno());
-            return;
+            $this->_stmt = $this->_mysqli->stmt_init();
+    
+            $this->server_info = $this->_mysqli->server_info;
+        } catch (mysqli_sql_exception $e) {
+            throw new DbSysLinkException("Cannot connect to system database, check config.php. MySQL said: " . $e->getMessage(), $e->getCode(), $e);
         }
-
-        $this->_stmt = $this->_mysqli->stmt_init();
-
-        $this->server_info = $this->_mysqli->server_info;
 
         return;
     }
@@ -125,24 +119,22 @@ class db {
      * @return void                    No value is returned
      */
     private function _connect_usr_db() {
-        self::$_instance_sys_link->run_query("SELECT db_host, db_port, db_username, db_password, db_name FROM `databases` WHERE user_id=? LIMIT 1", "i", $this->_mode);
+        try {
+            self::$_instance_sys_link->run_query("SELECT db_host, db_port, db_username, db_password, db_name FROM `databases` WHERE user_id=? LIMIT 1", "i", $this->_mode);
 
-        if (self::$_instance_sys_link->count() != 1) {
-            throw new DbUsrLinkException("No user database credentials found for current user.");
-            return;
+            if (self::$_instance_sys_link->count() != 1) {
+                throw new DbUsrLinkException("No user database credentials found for current user.");
+                return;
+            }
+
+            $result = self::$_instance_sys_link->fetch_array()[0];
+            $this->_mysqli = new mysqli($result['db_host'], $result['db_username'], $result['db_password'], $result['db_name'], $result['db_port']);
+
+            $this->_stmt = $this->_mysqli->stmt_init();
+            $this->server_info = $this->_mysqli->server_info;
+        } catch (mysqli_sql_exception $e) {
+            throw new DbUsrLinkException($e->getMessage(), $e->getCode(), $e);
         }
-        $result = self::$_instance_sys_link->fetch_array()[0];
-        $this->_mysqli = new mysqli($result['db_host'], $result['db_username'], $result['db_password'], $result['db_name'], $result['db_port']);
-        $this->errno = $this->_mysqli->connect_errno;
-
-        if ($this->_mysqli->connect_errno) {
-            throw new DbUsrLinkException(mysqli_connect_error(), mysqli_connect_errno());
-            return;
-        }
-
-        $this->_stmt = $this->_mysqli->stmt_init();
-
-        $this->server_info = $this->_mysqli->server_info;
 
         return;
     }
@@ -159,59 +151,23 @@ class db {
      * @return bool                    Returns true on success or false on failure.
      */
     public function run_query(string $query, string $types = null, $var = null, ...$vars) {
-        if (!$this->_stmt->prepare($query)) {
-            $this->errno = $this->_stmt->errno;
-            $this->error = $this->_stmt->error;
-
+        try {
+            $this->_stmt->prepare($query);
+            if (!empty($types)) {
+                $this->_stmt->bind_param($types, $var, ...$vars);
+            }
+            $this->_stmt->execute();
+            $this->_result = $this->_stmt->get_result();
+        } catch (mysqli_sql_exception $e) {
             if ($this->_mode == -1) {
-                throw new DbSysLinkException($this->_stmt->error, $this->_stmt->errno);
+                throw new DbSysLinkException($e->getMessage(), $e->getCode(), $e);
             } else {
-                throw new DbUsrLinkException($this->_stmt->error, $this->_stmt->errno);
+                throw new DbUsrLinkException($e->getMessage(), $e->getCode(), $e);
             }
 
             return false;
         }
 
-        if (!empty($types)) {
-            if (!$this->_stmt->bind_param($types, $var, ...$vars)) {
-                $this->errno = $this->_stmt->errno;
-                $this->error = $this->_stmt->error;
-
-                if ($this->_mode == -1) {
-                    throw new DbSysLinkException($this->_stmt->error, $this->_stmt->errno);
-                } else {
-                    throw new DbUsrLinkException($this->_stmt->error, $this->_stmt->errno);
-                }
-
-                return false;
-            }
-        }
-
-        if (!$this->_stmt->execute()) {
-            $this->errno = $this->_stmt->errno;
-            $this->error = $this->_stmt->error;
-
-            if ($this->_mode == -1) {
-                throw new DbSysLinkException($this->_stmt->error, $this->_stmt->errno);
-            } else {
-                throw new DbUsrLinkException($this->_stmt->error, $this->_stmt->errno);
-            }
-
-            return false;
-        }
-        $this->_result = $this->_stmt->get_result();
-        if ($this->_stmt->errno != 0) {
-            $this->errno = $this->_stmt->errno;
-            $this->error = $this->_stmt->error;
-
-            if ($this->_mode == -1) {
-                throw new DbSysLinkException($this->_stmt->error, $this->_stmt->errno);
-            } else {
-                throw new DbUsrLinkException($this->_stmt->error, $this->_stmt->errno);
-            }
-
-            return false;
-        }
         return true;
     }
 
