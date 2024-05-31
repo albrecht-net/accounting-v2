@@ -1,5 +1,5 @@
 <?php
-class exception_request extends InvalidArgumentException {}
+class RequestException extends InvalidArgumentException {}
 class request {
     /**
      * @var array      $_query_str     Array with values from request query string
@@ -47,7 +47,7 @@ class request {
      *                                 which is equivalent to FILTER_UNSAFE_RAW.
      * @param array    $options       Optional. Associative array of options or bitwise disjunction of flags.
      *                                 The default value provided in ['options']['default'] will not overwrite the value if the filter fails.
-     * @throws                         exception_request if the query parameter with $name is required but was not found.
+     * @throws                         RequestException if the query parameter with $name is required but was not found.
      * @return mixed|void              Query string value, or void if name not found.
      */
     public static function query_str($name, $required, $trim = true, $filter = FILTER_DEFAULT, $options = array()) {
@@ -80,12 +80,12 @@ class request {
             $_request = filter_var($_request, $filter, $options);
 
             if (($_request === false && $filter !== FILTER_VALIDATE_BOOL) || ($_request === null && $filter === FILTER_VALIDATE_BOOL)) {
-                throw new exception_request("Query parameter '" . $name . "' does not match required format.");
+                throw new RequestException("Query parameter '" . $name . "' does not match required format.");
             }
 
         // Throw exception if value was not set but is required
         } elseif ($required) {
-            throw new exception_request("Query parameter '" . $name . "' was not provided in URL but is required.");
+            throw new RequestException("Query parameter '" . $name . "' was not provided in URL but is required.");
 
         // Return default value if value was not set
         } elseif (isset($options['options']['default'])) {
@@ -109,7 +109,7 @@ class request {
      *                                 which is equivalent to FILTER_UNSAFE_RAW.
      * @param array    $options       Optional. Associative array of options or bitwise disjunction of flags.
      *                                 The default value provided in ['options']['default'] will not overwrite the value if the filter fails.
-     * @throws                         exception_request if the query parameter with $name is required but was not found.
+     * @throws                         RequestException if the query parameter with $name is required but was not found.
      * @return mixed|void              Request body value, or void if name not found.
      */
     public static function body($name, $required, $trim = true, $filter = FILTER_DEFAULT, $options = array()) {
@@ -142,12 +142,12 @@ class request {
             $_request = filter_var($_request, $filter, $options);
 
             if (($_request === false && $filter !== FILTER_VALIDATE_BOOL) || ($_request === null && $filter === FILTER_VALIDATE_BOOL)) {
-                throw new exception_request("Query parameter '" . $name . "' does not match required format.");
+                throw new RequestException("Query parameter '" . $name . "' does not match required format.");
             }
 
         // Throw exception if value was not set but is required
         } elseif ($required) {
-            throw new exception_request("Query parameter '" . $name . "' was not provided in request body but is required.");
+            throw new RequestException("Query parameter '" . $name . "' was not provided in request body but is required.");
 
         // Return default value if value was not set
         } elseif (isset($options['options']['default'])) {

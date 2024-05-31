@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
         exit;
-    } catch (exception_request $e) {
+    } catch (RequestException $e) {
         response::error($e->getMessage());
         response::send(false, 400);
         exit;
