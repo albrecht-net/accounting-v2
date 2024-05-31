@@ -4,8 +4,8 @@
 $driver = new mysqli_driver();
 $driver->report_mode = MYSQLI_REPORT_OFF;
 
-class exception_sys_link extends Exception {}
-class exception_usr_link extends Exception {}
+class exception_sys_link extends RuntimeException {}
+class exception_usr_link extends RuntimeException {}
 class db {
     /**
      * @var object     $_instance_sys_link Object of the instantiated class for the system database.
