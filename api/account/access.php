@@ -26,24 +26,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         );
 
         if (strlen($request_body['username']) < 1) {
-            throw new Exception('Username cannot be an empty string.');
+            throw new ApplicationRuntimeException('Username cannot be an empty string.');
         }
-        
+    }  catch (JsonException $e) {
+        response::error('Faulty request data. JSON ' . $e->getMessage());
+        response::send(false, 400);
+        exit;
+    } catch (RequestException | ApplicationRuntimeException $e) {
+        response::error($e->getMessage());
+        response::send(false, 400);
+        exit;
+    }
+    
+    try {
         // Query users table by given username
         db::init()->run_query("SELECT `id`, `password` FROM `users` WHERE username=? AND `status`='Y'", "s", $request_body['username']);
-
         if (db::init()->count() != 1) {
-            trigger_error("Username '" . $request_body['username'] . "' was not found.", E_USER_NOTICE);
-            response::error('Invalid user credentials.');
-            response::send(false, 401);
-            exit;
+            throw new ApplicationRuntimeException("Username '" . $request_body['username'] . "' was not found.");
         }
         
         if (!password_verify($request_body['password'], db::init()->fetch_one()['password'])) {
-            trigger_error("Invalid credentials provided for user'" . $request_body['username'] . "'.", E_USER_NOTICE);
-            response::error('Invalid user credentials.');
-            response::send(false, 401);
-            exit;
+            throw new ApplicationRuntimeException("Invalid credentials provided for user'" . $request_body['username'] . "'.");
         }
         
         $time_now = time();
@@ -74,18 +77,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         setcookie('sid', $sid, $arr_cookie_options);
     
         response::result(array('session_id' => $sid));
-
-    } catch (JsonException $e) {
-        response::error('Faulty request data. JSON ' . $e->getMessage());
-        response::send(false, 400);
-        exit;
-    } catch (RequestException $e) {
-        response::error($e->getMessage());
-        response::send(false, 400);
-        exit;
     } catch (DbSysLinkException $e) {
         response::error('Internal application error occurred.');
         response::send(false, 500);
+        exit;
+    } catch (ApplicationRuntimeException $e) {
+        response::error('Invalid user credentials.');
+        response::send(false, 401);
         exit;
     }
 
