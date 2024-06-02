@@ -19,6 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
             'password_new' => request::body('password_new', true, false),
         );
 
+        if ($request_body['password_old'] == $request_body['password_new']) {
+            throw new ApplicationRuntimeException('Old password cannot be the same as the new one.');
+        }
+
+        if (strlen($request_body['password_new']) < 1) {
+            throw new ApplicationRuntimeException('New password cannot be an empty string.');
+        }
+
         // Query users table by given username
         db::init()->run_query("SELECT `password` FROM `users` WHERE id=? AND `status`='Y'", "i", USER_ID);
 
@@ -30,47 +38,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
         }
         
         if (!password_verify($request_body['password_old'], db::init()->fetch_one()['password'])) {
-            response::error('Old password is incorrect.');
-            response::send(false, 400);
-            exit;
+            throw new ApplicationRuntimeException('Old password is incorrect.');
         }
-        
-        $time_now = time();
-        
-        // Set expire by date
-        if ($request_body['remember']) {
-            $time_expire = $time_now + config::get('session.max_lifetime');
-        
-            // Set cookie expire timestamp
-            $arr_cookie_options['expires'] = $time_expire;
-        } else {
-            $time_expire = $time_now + config::get('session.inactive_time');
-        
-            // Set cookie expire timestamp
-            $arr_cookie_options['expires'] = 0;
-        }
-        
-        // Generate session id
-        $sid = bin2hex(random_bytes(32));
-        
-        // Get user agent
-        $user_agent = explode(" ", $_SERVER['HTTP_USER_AGENT'], 2)[0];
-        
-        // Insert new row to sessions table
-        db::init()->run_query("INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `expiry_date`, `last_activity`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?), FROM_UNIXTIME(?))", "sissii", $sid, db::init()->fetch_one()['id'], $user_agent, $_SERVER['REMOTE_ADDR'], $time_expire, $time_now);
-        
-        // Send cookie with additional parameters
-        setcookie('sid', $sid, $arr_cookie_options);
-    
-        response::result(array('session_id' => $sid));
 
+        // Update password in users table
+        db::init()->run_query("UPDATE users SET password = ? WHERE id = ?", "si", password_hash($request_body['password_new'], PASSWORD_DEFAULT), USER_ID);
+
+        // Invalidate all active user sessions
+        db::init()->run_query("UPDATE sessions SET expiry_date = CURRENT_TIMESTAMP() WHERE user_id = ? and expiry_date > NOW()", "i", USER_ID);
     } catch (JsonException $e) {
         response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
         exit;
-    } catch (RequestException | Exception $e) {
+    } catch (RequestException | ApplicationRuntimeException $e) {
         response::error($e->getMessage());
         response::send(false, 400);
+        exit;
+    } catch (ValueError $e) {
+        trigger_error("PasswordChange #" . $e->getCode() . " - UID: "  . USER_ID . " - " . $e->getMessage(), E_USER_NOTICE);
+        response::error('Internal application error occurred.');
+        response::send(false, 500);
         exit;
     } catch (DbSysLinkException $e) {
         response::error('Internal application error occurred.');
@@ -78,6 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
         exit;
     }
 
-    response::send(true, 200);
+    response::send(true, 205);
     exit;
 }
