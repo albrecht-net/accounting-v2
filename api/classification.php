@@ -17,12 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     try {
         $path_parameters = array(
             'id' => request::query_str('id', false, false, FILTER_VALIDATE_INT)
-            
         );
         $query_parameters = array(
             'active' => request::body('active', false, false, FILTER_VALIDATE_BOOL),
             'direction' => request::body('direction', false, true, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => "/^(asc|desc)$/i", 'default' => 'asc'))),
-            'label' => request::body('label', false),
+            'label' => request::body('label', false, true),
             'label.contains' => request::body('label.contains', false),
             'label.endswith' => request::body('label.endswith', false),
             'label.startswith' => request::body('label.startswith', false),
@@ -47,10 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 break;
 
             case ($query_parameters['active'] === true):
-                $sql_conditions[] = "``active`='Y'";
+                $sql_conditions[] = "`active`='Y'";
 
             case ($query_parameters['active'] === false):
-                $sql_conditions[] = "``active`='N'";
+                $sql_conditions[] = "`active`='N'";
 
             case (isset($query_parameters['label'])):
                 $sql_conditions[] = "`label`=?";
@@ -71,7 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 $sql_conditions[] = "`label` LIKE ?";
                 $sql_parameters[0] .= "s";
                 $sql_parameters[] = $query_parameters['label.startswith']. "%";
-
         }
 
         if (!empty($sql_conditions)) {
@@ -125,12 +123,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 } elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
     try {
         $path_parameters = array(
-            'id' => request::query_str('identifier', true)
+            'id' => request::query_str('id', true, false, FILTER_VALIDATE_INT)
         );
-        $request_body = array(
-            'label' => request::body('label', false),
-            'active' => request::body('active', false)
+        $query_parameters = array(
+            'active' => request::body('active', false, false, FILTER_VALIDATE_BOOL),
+            'label' => request::body('label', false, true)
         );
+
+        // Base query
+        $query = "UPDATE `classification` SET";
+
+        // Update conditions
+        $sql_conditions = [];
+        $sql_parameters = [''];
+
+        if (isset($query_parameters['label'])) {
+            $sql_conditions[] = "`label`=?";
+            $sql_parameters[0] .= "s";
+            $sql_parameters[] = $query_parameters['label'];
+        }
+
+        if ($query_parameters['active'] === true) {
+            $sql_conditions[] = "`active`='Y'";
+        } elseif ($query_parameters['active'] === false) {
+            $sql_conditions[] = "`active`='N'";
+        }
+
+        if (!empty($sql_conditions)) {
+            $query .= implode(', ', $sql_conditions);
+        }
+
+        db::init(USER_ID)->run_query($query, $sql_parameters[0], ...array_slice($sql_parameters, 1));
+
+        db::init(USER_ID)->run_query("SELECT * FROM classification WHERE  classificationID=?", "i", $path_parameters['id']);
+        response::result(db::init(USER_ID)->fetch_one());
     } catch (JsonException $e) {
         response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
@@ -139,12 +165,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::error($e->getMessage());
         response::send(false, 400);
         exit;
-    }
-
-    try {
-        db::init(USER_ID)->run_query("UPDATE classification SET label=?, active=? WHERE classificationID=?", "ssi", $request_body['label'], $request_body['active'], $path_parameters['id']);
-        db::init(USER_ID)->run_query("SELECT * FROM classification WHERE  classificationID=?", "i", $path_parameters['id']);
-        response::result(db::init(USER_ID)->fetch_one());
     } catch (DbSysLinkException $e) {
         response::error('Internal application error occurred.');
         response::send(false, 500);
