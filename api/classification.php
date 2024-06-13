@@ -38,38 +38,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $sql_conditions = [];
         $sql_parameters = [''];
 
-        switch (true) {
-            case (isset($path_parameters['id'])):
-                $sql_conditions[] = "`classificationID`=?";
-                $sql_parameters[0] .= "i";
-                $sql_parameters[] = $path_parameters['id'];
-                break;
-
-            case ($query_parameters['active'] === true):
+        if (isset($path_parameters['id'])) {
+            $sql_conditions[] = "`classificationID`=?";
+            $sql_parameters[0] .= "i";
+            $sql_parameters[] = $path_parameters['id'];
+        } else {
+            if ($query_parameters['active'] === true) {
                 $sql_conditions[] = "`active`='Y'";
-
-            case ($query_parameters['active'] === false):
+            } elseif ($query_parameters['active'] === false) {
                 $sql_conditions[] = "`active`='N'";
+            }
 
-            case (isset($query_parameters['label'])):
+            if (isset($query_parameters['label'])) {
                 $sql_conditions[] = "`label`=?";
                 $sql_parameters[0] .= "s";
                 $sql_parameters[] = $query_parameters['label'];
+            }
 
-            case (isset($query_parameters['label.contains'])):
+            if (isset($query_parameters['label.contains'])) {
                 $sql_conditions[] = "`label` LIKE ?";
                 $sql_parameters[0] .= "s";
                 $sql_parameters[] = "%" . $query_parameters['label.contains'] . "%";
+            }
 
-            case (isset($query_parameters['label.endswith'])):
+            if (isset($query_parameters['label.endswith'])) {
                 $sql_conditions[] = "`label` LIKE ?";
                 $sql_parameters[0] .= "s";
                 $sql_parameters[] = "%" . $query_parameters['label.endswith'];
+            }
 
-            case (isset($query_parameters['label.startswith'])):
+            if (isset($query_parameters['label.startswith'])) {
                 $sql_conditions[] = "`label` LIKE ?";
                 $sql_parameters[0] .= "s";
                 $sql_parameters[] = $query_parameters['label.startswith']. "%";
+            }
         }
 
         if (!empty($sql_conditions)) {
