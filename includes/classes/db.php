@@ -185,6 +185,25 @@ class db {
     }
 
     /**
+     * Gets the number of rows in a table without any filter applied.
+     * 
+     * @param string   $table          Table name.
+     * @return integer                 Number of rows in the table.
+     */
+    public function count_all(string $table) {
+        $query = "SELECT COUNT(*) as `count` FROM `" . $table . "`";
+        if ($this->_mode == -1) {
+            self::$_instance_sys_link->run_query($query);
+            $result = self::$_instance_sys_link->fetch_array()[0]['count'];
+        } else {
+            self::$_instance_usr_link->run_query($query);
+            $result = self::$_instance_usr_link->fetch_array()[0]['count'];
+        }
+
+        return $result;
+    }
+
+    /**
      * Fetches all result rows as an associative array.
      * 
      * @return array                   Result of all rows as array.
