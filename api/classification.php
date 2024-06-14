@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         }
 
         // Order resultset
-        $query .= " ORDER BY " . $query_parameters['order'] . " " . strtoupper($query_parameters['direction']);
+        $query .= " ORDER BY `" . $query_parameters['order'] . "` " . strtoupper($query_parameters['direction']);
 
         // Pagination of resultset if page and per_page parameters are > 0
         if (($query_parameters['page'] > 0) and ($query_parameters['per_page'] > 0)) {
@@ -132,6 +132,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             'label' => request::body('label', false, true)
         );
 
+        if (request::$query_param_count == 0) {
+            throw new ApplicationRuntimeException('Provide at least one update parameter in request body.');
+        }
+
         // Base query
         $query = "UPDATE `classification` SET";
 
@@ -155,15 +159,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $query .= implode(', ', $sql_conditions);
         }
 
-        db::init(USER_ID)->run_query($query, $sql_parameters[0], ...array_slice($sql_parameters, 1));
+        $query .= " WHERE `classificationID`=?";
+        $sql_parameters[0] .= "i";
+        $sql_parameters[] = $path_parameters['id'];
 
-        db::init(USER_ID)->run_query("SELECT * FROM classification WHERE  classificationID=?", "i", $path_parameters['id']);
+        db::init(USER_ID)->run_query($query, $sql_parameters[0], ...array_slice($sql_parameters, 1));
+        db::init(USER_ID)->run_query("SELECT * FROM `classification` WHERE `classificationID`=?", "i", $path_parameters['id']);
+
         response::result(db::init(USER_ID)->fetch_one());
     } catch (JsonException $e) {
         response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
         exit;
-    } catch (RequestException $e) {
+    } catch (RequestException | ApplicationRuntimeException $e) {
         response::error($e->getMessage());
         response::send(false, 400);
         exit;
