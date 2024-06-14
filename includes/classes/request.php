@@ -12,6 +12,11 @@ class request {
     private static $_body = array();
 
     /**
+     * @var int        $query_param_count Count of already provided parameters in request body
+     */
+    public static $query_param_count = 0;
+
+    /**
      * Load request query string
      * 
      * @return void                    No value is returned
@@ -145,6 +150,8 @@ class request {
                 throw new RequestException("Query parameter '" . $name . "' does not match required format.");
             }
 
+            self::$query_param_count ++;
+
         // Throw exception if value was not set but is required
         } elseif ($required) {
             throw new RequestException("Query parameter '" . $name . "' was not provided in request body but is required.");
@@ -152,6 +159,8 @@ class request {
         // Return default value if value was not set
         } elseif (isset($options['options']['default'])) {
             $_request = $options['options']['default'];
+
+            self::$query_param_count ++;
 
         // Return void if value was not set, not required and no default value was provided
         } else {
