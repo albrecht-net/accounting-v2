@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             if (isset($query_parameters['label.startswith'])) {
                 $sql_conditions[] = "`label` LIKE ?";
                 $sql_parameters[0] .= "s";
-                $sql_parameters[] = $query_parameters['label.startswith']. "%";
+                $sql_parameters[] = $query_parameters['label.startswith'] . "%";
             }
         }
 
@@ -195,6 +195,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 // Delete classification
 } elseif ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
-    response::send(false, 501);
+    try {
+        $path_parameters = array(
+            'id' => request::query_str('id', true, false, FILTER_VALIDATE_INT)
+        );
+
+        db::init(USER_ID)->run_query("DELETE FROM `classification` WHERE `classificationID`=?", "i", $path_parameters['id']);
+
+        response::result(array('affected_rows' => -1));
+    } catch (RequestException $e) {
+        response::error($e->getMessage());
+        response::send(false, 400);
+        exit;
+    } catch (DbSysLinkException $e) {
+        response::error('Internal application error occurred.');
+        response::send(false, 500);
+        exit;
+    } catch (DbUsrLinkException $e) {
+        response::error("Error with user database occoured. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+        response::send(false, 502);
+        exit;
+    }
+
+    response::send(true, 200);
     exit;
 }
