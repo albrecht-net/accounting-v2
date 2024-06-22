@@ -43,7 +43,7 @@ function userAuthenticate(string $sid = null):int {
         db::init()->run_query("SELECT user_id, UNIX_TIMESTAMP(expiry_date) AS expiry_date FROM sessions WHERE id = ? LIMIT 1", "s", $sid);
 
         // Check if session found
-        if (db::init()->count() != 1) {
+        if (db::init()->num_rows() != 1) {
             response::error('Invalid session id.');
             response::send(false, 401);
             return 0;

@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
         // Query users table by given username
         db::init()->run_query("SELECT `password` FROM `users` WHERE id=? AND `status`='Y'", "i", USER_ID);
 
-        if (db::init()->count() != 1) {
+        if (db::init()->num_rows() != 1) {
             trigger_error("No entry for user with id '" . USER_ID . "' was found in  users table during password change request.", E_USER_NOTICE);
             response::error('Internal application error occurred.');
             response::send(false, 500);

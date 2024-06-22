@@ -126,7 +126,7 @@ class db {
         try {
             self::$_instance_sys_link->run_query("SELECT db_host, db_port, db_username, db_password, db_name FROM `databases` WHERE user_id=? LIMIT 1", "i", $this->_mode);
 
-            if (self::$_instance_sys_link->count() != 1) {
+            if (self::$_instance_sys_link->num_rows() != 1) {
                 throw new DbUsrLinkException("No user database credentials found for current user.");
                 return;
             }
@@ -180,7 +180,7 @@ class db {
      * 
      * @return integer                 Number of rows in the result set.
      */
-    public function count() {
+    public function num_rows() {
         return $this->_result->num_rows;
     }
 
@@ -219,7 +219,7 @@ class db {
      * @return array                   Returns an array representing the fetched row or empty array if there are no more rows in the result or on failure.
      */
     public function fetch_one(int $offset = 0) {
-        if ($this->count() < 1) {
+        if ($this->num_rows() < 1) {
             return array();
         }
 

@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         // Get journal database credentials (except password) 
         db::init()->run_query("SELECT `db_host`, `db_port`, `db_username`, `db_name` FROM `databases` WHERE user_id=?", "i", USER_ID);
 
-        if (db::init()->count() != 1 ) {
+        if (db::init()->num_rows() != 1 ) {
             response::result(array('db_host'=>null, 'db_port'=>null, 'db_username'=>null, 'db_name'=>null));
         } else{
             response::result(db::init()->fetch_one());

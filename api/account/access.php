@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         // Query users table by given username
         db::init()->run_query("SELECT `id`, `password` FROM `users` WHERE username=? AND `status`='Y'", "s", $request_body['username']);
-        if (db::init()->count() != 1) {
+        if (db::init()->num_rows() != 1) {
             throw new ApplicationRuntimeException("Username '" . $request_body['username'] . "' was not found.");
         }
         
