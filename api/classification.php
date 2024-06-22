@@ -101,11 +101,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::result(db::init(USER_ID)->fetch_array());
         response::result_info(db::init(USER_ID)->num_rows(), db::init(USER_ID)->num_rows_all('classification'), $query_parameters['page'], $query_parameters['per_page']);
     } catch (JsonException $e) {
-        response::error('Faulty request data. JSON ' . $e->getMessage());
+        response::error('Faulty request data. JSON ' . $e->getMessage(), $e->getCode());
         response::send(false, 400);
         exit;
     } catch (RequestException $e) {
-        response::error($e->getMessage());
+        response::error($e->getMessage(), $e->getCode());
         response::send(false, 400);
         exit;
     } catch (DbSysLinkException $e) {
@@ -168,11 +168,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
         response::result(db::init(USER_ID)->fetch_one());
     } catch (JsonException $e) {
-        response::error('Faulty request data. JSON ' . $e->getMessage());
+        response::error('Faulty request data. JSON ' . $e->getMessage(), $e->getCode());
         response::send(false, 400);
         exit;
     } catch (RequestException | ApplicationRuntimeException $e) {
-        response::error($e->getMessage());
+        response::error($e->getMessage(), $e->getCode());
         response::send(false, 400);
         exit;
     } catch (DbSysLinkException $e) {
@@ -201,10 +201,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         );
 
         db::init(USER_ID)->run_query("DELETE FROM `classification` WHERE `classificationID`=?", "i", $path_parameters['id']);
-
-        response::result(array('affected_rows' => -1));
     } catch (RequestException $e) {
-        response::error($e->getMessage());
+        response::error($e->getMessage(), $e->getCode());
         response::send(false, 400);
         exit;
     } catch (DbSysLinkException $e) {

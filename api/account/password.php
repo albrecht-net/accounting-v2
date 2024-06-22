@@ -47,11 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
         // Invalidate all active user sessions
         db::init()->run_query("UPDATE sessions SET expiry_date = CURRENT_TIMESTAMP() WHERE user_id = ? and expiry_date > NOW()", "i", USER_ID);
     } catch (JsonException $e) {
-        response::error('Faulty request data. JSON ' . $e->getMessage());
+        response::error('Faulty request data. JSON ' . $e->getMessage(), $e->getCode());
         response::send(false, 400);
         exit;
     } catch (RequestException | ApplicationRuntimeException $e) {
-        response::error($e->getMessage());
+        response::error($e->getMessage(), $e->getCode());
         response::send(false, 400);
         exit;
     } catch (ValueError $e) {

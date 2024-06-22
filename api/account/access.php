@@ -29,11 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             throw new ApplicationRuntimeException('Username cannot be an empty string.');
         }
     }  catch (JsonException $e) {
-        response::error('Faulty request data. JSON ' . $e->getMessage());
+        response::error('Faulty request data. JSON ' . $e->getMessage(), $e->getCode());
         response::send(false, 400);
         exit;
     } catch (RequestException | ApplicationRuntimeException $e) {
-        response::error($e->getMessage());
+        response::error($e->getMessage(), $e->getCode());
         response::send(false, 400);
         exit;
     }
