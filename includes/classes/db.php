@@ -190,7 +190,7 @@ class db {
      * @param string   $table          Table name.
      * @return integer                 Number of rows in the table.
      */
-    public function count_all(string $table) {
+    public function num_rows_all(string $table) {
         $query = "SELECT COUNT(*) as `count` FROM `" . $table . "`";
         if ($this->_mode == -1) {
             self::$_instance_sys_link->run_query($query);

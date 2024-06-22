@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         db::init(USER_ID)->run_query($query, $sql_parameters[0], ...array_slice($sql_parameters, 1));
 
         response::result(db::init(USER_ID)->fetch_array());
-        response::result_info(db::init(USER_ID)->num_rows(), db::init(USER_ID)->count_all('classification'), $query_parameters['page'], $query_parameters['per_page']);
+        response::result_info(db::init(USER_ID)->num_rows(), db::init(USER_ID)->num_rows_all('classification'), $query_parameters['page'], $query_parameters['per_page']);
     } catch (JsonException $e) {
         response::error('Faulty request data. JSON ' . $e->getMessage());
         response::send(false, 400);
