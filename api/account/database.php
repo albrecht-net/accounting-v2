@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::send(false, 500);
         exit;
     } catch (DbUsrLinkException $e) {
-        response::error("Cannot establish test connenction to user database. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+        response::error("Cannot establish test connenction to user database. MySQL said: " . $e->getMessage(), $e->getCode());
         response::result(array('server_info' => 'unknown'));
     }
 
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::send(false, 400);
         exit;
     } catch (mysqli_sql_exception $e) {
-        response::error("Cannot connect to user database, check given credentials. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+        response::error("Cannot connect to user database, check given credentials. MySQL said: " . $e->getMessage(), $e->getCode());
         response::result(array('server_info' => 'unknown'));
     
         if ($request_body['force'] == false) {

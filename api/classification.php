@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::send(false, 500);
         exit;
     } catch (DbUsrLinkException $e) {
-        response::error("Error with user database occoured. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+        response::error("Error with user database occoured. MySQL said: " . $e->getMessage(), $e->getCode());
         response::send(false, 502);
         exit;
     }
@@ -181,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::send(false, 500);
         exit;
     } catch (DbUsrLinkException $e) {
-        response::error("Error with user database occoured. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+        response::error("Error with user database occoured. MySQL said: " . $e->getMessage(), $e->getCode());
         response::send(false, 502);
         exit;
     }
@@ -215,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::send(false, 500);
         exit;
     } catch (DbUsrLinkException $e) {
-        response::error("Error with user database occoured. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+        response::error("Error with user database occoured. MySQL said: " . $e->getMessage(), $e->getCode());
         response::send(false, 502);
         exit;
     }
@@ -251,7 +251,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         response::send(false, 500);
         exit;
     } catch (DbUsrLinkException $e) {
-        response::error("Error with user database occoured. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+        response::error("Error with user database occoured. MySQL said: " . $e->getMessage(), $e->getCode());
         response::send(false, 502);
         exit;
     }
