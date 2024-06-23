@@ -48,6 +48,16 @@ class db {
     private $_result;
 
     /**
+     * @var int|string $affected_rows  Number of affected rows in a previous MySQL operation.
+     */
+    public $affected_rows = 0;
+
+    /**
+     * @var int|string $ainsert_id     Value generated for an AUTO_INCREMENT column by the last query
+     */
+    public $insert_id = 0;
+
+    /**
      * @var string     $server_info    Version of the MySQL server.
      */
     public $server_info;
@@ -162,6 +172,8 @@ class db {
             }
             $this->_stmt->execute();
             $this->_result = $this->_stmt->get_result();
+            $this->affected_rows = $this->_mysqli->affected_rows;
+            $this->insert_id = $this->_mysqli->insert_id;
         } catch (mysqli_sql_exception $e) {
             if ($this->_mode == -1) {
                 throw new DbSysLinkException($e->getMessage(), $e->getCode(), $e);
