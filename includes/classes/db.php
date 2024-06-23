@@ -134,7 +134,7 @@ class db {
      */
     private function _connect_usr_db() {
         try {
-            self::$_instance_sys_link->run_query("SELECT db_host, db_port, db_username, db_password, db_name FROM `databases` WHERE user_id=? LIMIT 1", "i", $this->_mode);
+            self::$_instance_sys_link->run_query("SELECT `db_host`, `db_port`, `db_username`, `db_password`, `db_name` FROM `databases` WHERE `user_id`=? LIMIT 1", "i", $this->_mode);
 
             if (self::$_instance_sys_link->num_rows() != 1) {
                 throw new DbUsrLinkException("No user database credentials found for current user.");

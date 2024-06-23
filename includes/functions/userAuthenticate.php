@@ -40,7 +40,7 @@ function userAuthenticate(string $sid = null):int {
 
     // Get row matching the given session id
     try {
-        db::init()->run_query("SELECT user_id, UNIX_TIMESTAMP(expiry_date) AS expiry_date FROM sessions WHERE id = ? LIMIT 1", "s", $sid);
+        db::init()->run_query("SELECT `user_id`, UNIX_TIMESTAMP(`expiry_date`) AS 'expiry_date' FROM `sessions` WHERE `id`=? LIMIT 1", "s", $sid);
 
         // Check if session found
         if (db::init()->num_rows() != 1) {
@@ -60,7 +60,7 @@ function userAuthenticate(string $sid = null):int {
         $_uid = db::init()->fetch_one()['user_id'];
 
         // Update last activity in session table
-        db::init()->run_query("UPDATE sessions SET last_activity = FROM_UNIXTIME(?) WHERE id = ?", "is", $time_now, $sid);
+        db::init()->run_query("UPDATE `sessions` SET `last_activity` = FROM_UNIXTIME(?) WHERE `id`=?", "is", $time_now, $sid);
 
         // Return user id
         return $_uid;

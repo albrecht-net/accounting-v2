@@ -42,10 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
         }
 
         // Update password in users table
-        db::init()->run_query("UPDATE users SET password = ? WHERE id = ?", "si", password_hash($request_body['password_new'], PASSWORD_DEFAULT), USER_ID);
+        db::init()->run_query("UPDATE `users` SET `password`=? WHERE `id`=?", "si", password_hash($request_body['password_new'], PASSWORD_DEFAULT), USER_ID);
 
         // Invalidate all active user sessions
-        db::init()->run_query("UPDATE sessions SET expiry_date = CURRENT_TIMESTAMP() WHERE user_id = ? and expiry_date > NOW()", "i", USER_ID);
+        db::init()->run_query("UPDATE `sessions` SET `expiry_date` = CURRENT_TIMESTAMP() WHERE `user_id`=? and `expiry_date` > NOW()", "i", USER_ID);
     } catch (JsonException $e) {
         response::error('Faulty request data. JSON ' . $e->getMessage(), $e->getCode());
         response::send(false, 400);

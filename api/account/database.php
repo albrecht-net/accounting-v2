@@ -15,23 +15,23 @@ require_once ROOT_PATH . 'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_S
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     try {
         // Get journal database credentials (except password) 
-        db::init()->run_query("SELECT `db_host`, `db_port`, `db_username`, `db_name` FROM `databases` WHERE user_id=?", "i", USER_ID);
+        db::init()->run_query("SELECT `db_host`, `db_port`, `db_username`, `db_name` FROM `databases` WHERE `user_id`=?", "i", USER_ID);
 
         if (db::init()->num_rows() != 1 ) {
-            response::result(array('db_host'=>null, 'db_port'=>null, 'db_username'=>null, 'db_name'=>null));
+            response::result(array('db_host' => null, 'db_port' => null, 'db_username' => null, 'db_name' => null));
         } else{
             response::result(db::init()->fetch_one());
         }
 
         // Get server_info from journal db
-        response::result(array('server_info'=>db::init(USER_ID)->server_info));
+        response::result(array('server_info' => db::init(USER_ID)->server_info));
     } catch (DbSysLinkException $e) {
         response::error('Internal application error occurred.');
         response::send(false, 500);
         exit;
     } catch (DbUsrLinkException $e) {
         response::error("Cannot establish test connenction to user database. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
-        response::result(array('server_info'=>'unknown'));
+        response::result(array('server_info' => 'unknown'));
     }
 
     response::send(true, 200);
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         
         // Open temporary connection to user database and get server_info
         $_tmp_mysqli = new mysqli($request_body['db_host'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_port']);
-        response::result(array('server_info'=>$_tmp_mysqli->server_info));
+        response::result(array('server_info' => $_tmp_mysqli->server_info));
         
         // Insert or replace user database configuration
         db::init()->run_query("INSERT INTO `databases` (`user_id`, `db_host`, `db_port`, `db_username`, `db_password`, `db_name`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `db_host`=?, `db_port`=?, `db_username`=?, `db_password`=?, `db_name`=?", "isissssisss", USER_ID, $request_body['db_host'], $request_body['db_port'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name'], $request_body['db_host'], $request_body['db_port'], $request_body['db_username'], $request_body['db_password'], $request_body['db_name']);
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit;
     } catch (mysqli_sql_exception $e) {
         response::error("Cannot connect to user database, check given credentials. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
-        response::result(array('server_info'=>'unknown'));
+        response::result(array('server_info' => 'unknown'));
     
         if ($request_body['force'] == false) {
             response::send(false, 400);

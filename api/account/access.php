@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     try {
         // Query users table by given username
-        db::init()->run_query("SELECT `id`, `password` FROM `users` WHERE username=? AND `status`='Y'", "s", $request_body['username']);
+        db::init()->run_query("SELECT `id`, `password` FROM `users` WHERE `username`=? AND `status`='Y'", "s", $request_body['username']);
         if (db::init()->num_rows() != 1) {
             throw new ApplicationRuntimeException("Username '" . $request_body['username'] . "' was not found.");
         }
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Get row matching the given session id
     try {
-        db::init()->run_query("UPDATE `sessions` SET `expiry_date` = current_timestamp() WHERE `sessions`.`id` = ? AND `expiry_date` > NOW()", "s", $sid);
+        db::init()->run_query("UPDATE `sessions` SET `expiry_date` = current_timestamp() WHERE `sessions`.`id`=? AND `expiry_date` > NOW()", "s", $sid);
     } catch (DbSysLinkException $e) {
         response::error('Internal application error occurred.');
         response::send(false, 500);
