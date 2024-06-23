@@ -167,6 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         db::init(USER_ID)->run_query("SELECT * FROM `classification` WHERE `classificationID`=?", "i", $path_parameters['id']);
 
         response::result(db::init(USER_ID)->fetch_one());
+        response::result_info(db::init(USER_ID)->num_rows(), db::init(USER_ID)->num_rows_all('classification'));
     } catch (JsonException $e) {
         response::error('Faulty request data. JSON ' . $e->getMessage(), $e->getCode());
         response::send(false, 400);
@@ -190,7 +191,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 // Create new classification
 } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    response::send(false, 501);
+    try {
+        $query_parameters = array(
+            'active' => request::body('active', false, false, FILTER_VALIDATE_BOOL),
+            'label' => request::body('label', false, true)
+        );
+
+        db::init(USER_ID)->run_query("INSERT INTO `classification` (`label`, `active`) VALUES (?, ?);", "ss", $query_parameters['label'], $query_parameters['active'] ? 'Y' : 'N');
+        db::init(USER_ID)->run_query("SELECT * FROM `classification` WHERE `classificationID`=?", "i", db::init(USER_ID)->insert_id);
+
+        response::result(db::init(USER_ID)->fetch_one());
+        response::result_info(db::init(USER_ID)->num_rows(), db::init(USER_ID)->num_rows_all('classification'));
+    } catch (JsonException $e) {
+        response::error('Faulty request data. JSON ' . $e->getMessage(), $e->getCode());
+        response::send(false, 400);
+        exit;
+    } catch (RequestException $e) {
+        response::error($e->getMessage(), $e->getCode());
+        response::send(false, 400);
+        exit;
+    } catch (DbSysLinkException $e) {
+        response::error('Internal application error occurred.');
+        response::send(false, 500);
+        exit;
+    } catch (DbUsrLinkException $e) {
+        response::error("Error with user database occoured. MySQL said: #" . $e->getCode() . " - " . $e->getMessage(), $e->getCode());
+        response::send(false, 502);
+        exit;
+    }
+
+    response::send(true, 200);
     exit;
 
 // Delete classification
@@ -201,9 +231,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         );
 
         db::init(USER_ID)->run_query("DELETE FROM `classification` WHERE `classificationID`=?", "i", $path_parameters['id']);
+
+        if (db::init(USER_ID)->affected_rows == 0) {
+            response::result(array('classificationID' => null));
+            throw new ApplicationRuntimeException("Record with id " . $path_parameters['id'] . " not found. No classification deleted.");
+        } else {
+            response::result(array('classificationID' => $path_parameters['id']));
+        }
     } catch (RequestException $e) {
         response::error($e->getMessage(), $e->getCode());
         response::send(false, 400);
+        exit;
+    } catch (ApplicationRuntimeException $e) {
+        response::error($e->getMessage(), $e->getCode());
+        response::send(false, 404);
         exit;
     } catch (DbSysLinkException $e) {
         response::error('Internal application error occurred.');
