@@ -4,7 +4,7 @@ if (!defined('ROOT_PATH')) {
 }
 
 // Allowed request types
-define('ACCESS_CONTROL_ALLOW_METHODS', array('GET', 'PUT', 'POST', 'DELETE'));
+define('ACCESS_CONTROL_ALLOW_METHODS', array('GET', 'PATCH', 'POST', 'DELETE'));
 
 // Require user authentication
 define('REQUIRE_AUTH', true);
@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     exit;
 
 // Modify existing classifications
-} elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
+} elseif ($_SERVER['REQUEST_METHOD'] == 'PATCH') {
     try {
         $path_parameters = array(
             'id' => request::query_str('id', true, false, FILTER_VALIDATE_INT)
@@ -220,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit;
     }
 
-    response::send(true, 200);
+    response::send(true, 201);
     exit;
 
 // Delete classification
