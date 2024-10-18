@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark light" />
     <link rel="stylesheet" href="./assets/styles/style.css" />
-    <!-- <script src="my-js-file.js" defer></script> -->
     <title>Login</title>
 </head>
 <body>
     <section>
         <h2>Login</h2>
-        <form action="./api/user/login.php" id="form-login">
+        <div role="banner" id="form-login-alert"></div>
+        <form action="./api/account/access.php" method="POST" id="form-login">
             <div class="form-input">
-                <input type="text" name="in-text-username" id="in-text-username" placeholder="Benutzername">
+                <input type="text" name="username" id="in-text-username" placeholder="Benutzername">
             </div>
             <div class="form-input">
-                <input type="password" name="in-password-password" id="in-password-password" placeholder="Passwort">
+                <input type="password" name="password" id="in-password-password" placeholder="Passwort">
             </div>
             <div class="form-input">
-                <input type="checkbox" name="chk-remember" id="chk-remember">
+                <input type="checkbox" name="remember" id="chk-remember">
                 <label for="chk-remember">Angemeldet bleiben</label>
             </div>
             <input type="submit" value="Login">
@@ -27,10 +27,22 @@
     </section>
 </body>
 
-<script src="includes/js/form-handler.js"></script>
+<!-- <script src="includes/js/form-handler.js"></script> -->
 
-<script>
-    sendFormData("form-login");
+<script type="module">
+    import { sendFormData } from './includes/js/form-handler.js';
+
+    const form = document.getElementById('form-login');
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        let response = await sendFormData(form);
+        console.log(response);
+
+        if (response.success == false) {
+            document.getElementById('in-password-password').value = '';
+            document.getElementById('form-login-alert').innerText = response.error.message;
+        }
+    });
 </script>
 
 </html>
