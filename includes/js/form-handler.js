@@ -1,36 +1,35 @@
-function sendFormData(formID) {
-    const form = document.getElementById(formID);
+export async function sendFormData(form) {
+    const url = form.action;
+    const method = form.method;
 
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        console.info("Form was submitted.");
-        
-        const url = this.action;
-        const method = 'POST';
-        const payload = new FormData(this);
-
-        fetch(url, {
-            method: method,
-            body: payload,
-            credentials: 'same-origin'
-        }).then(function(response) {
-            console.log(response);
-            if (!response.ok) {
-                throw new Error(`Looks like there was a problem. Response Error: ${response.status} ${response.statusText}`);
-            } else {
-                return response.json();
-            }
-    
-        }).then(function(data) {
-            console.info(data);
-            form.reset();
-
-            // window.location.replace()
-    
-        }).catch(function(error) {
-            console.error(error);
-        });
-
+    // Convert FormData to JSON
+    var object = {};
+    new FormData(form).forEach((value, key) => {
+        if (key in object === false) {
+            object[key] = value;
+            return;
+        }
+        if (Array.isArray(object[key]) === false) {
+            object[key] = [object[key]];
+        }
+        object[key].push(value);
     });
-}
+    const payload = JSON.stringify(object);
+
+    // Execute request
+    return await fetch(url, {
+        method: method,
+        body: payload,
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(function(response) {
+        return response.json();
+    }).then(function(data) {
+        return data;    
+    }).catch(function(error) {
+        console.error(error);
+        return {error: {code: null, message: error.message}, success: false};
+    });
+};
