@@ -3,13 +3,7 @@ if (!defined('ROOT_PATH')) {
     define('ROOT_PATH', dirname(__FILE__, 3) . DIRECTORY_SEPARATOR);
 }
 
-/**
- * Function class autoloader
- * Include class file given by name.
- * 
- * @param string $class_name Name of class that should get included.
- * @return bool Return true on success or false on failure.
- */
+// Autoload classes
 spl_autoload_register(function ($class_name) {
 
     $path = ROOT_PATH . 'includes' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR;
