@@ -18,7 +18,7 @@ spl_autoload_register(function ($class_name) {
     }
 });
 
-require_once ROOT_PATH .'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'appErrorHandler.php';
+require_once ROOT_PATH .'includes' . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'app_error_handler.php';
 
 // Verify if requested method is in allowed ones
 if(!in_array($_SERVER['REQUEST_METHOD'], ACCESS_CONTROL_ALLOW_METHODS)) {
@@ -36,4 +36,4 @@ if (!empty($_SERVER['CONTENT_TYPE'])) {
     }    
 }
 
-require_once ROOT_PATH .'includes' . DIRECTORY_SEPARATOR . 'functions' . DIRECTORY_SEPARATOR . 'userAuthenticate.php';
+require_once ROOT_PATH .'includes' . DIRECTORY_SEPARATOR . 'functions' . DIRECTORY_SEPARATOR . 'user_authenticate.php';
