@@ -69,7 +69,7 @@ class db {
      * @param int      $mode           -1: System database with credentials from config. Otherwise user_id (int != -1) for user database with credentials from system database.
      * @return object                  Return the instantiated object of the choosen database.
      */
-    public static function init(int $mode = -1) {
+    public static function init(int $mode = -1):object {
         if ($mode == -1) {
             if (!isset(self::$_instance_sys_link)) {
                 self::$_instance_sys_link = new self(-1);
@@ -111,7 +111,7 @@ class db {
      * @throws                         DbSysLinkException if some connection error occoured
      * @return void                    No value is returned
      */
-    private function _connect_sys_db() {
+    private function _connect_sys_db():void {
         try {
             $this->_mysqli = new mysqli(config::get('db.host'), config::get('db.username'), config::get('db.password'), config::get('db.name'), config::get('db.port'));
 
@@ -132,7 +132,7 @@ class db {
      * @throws                         DbUsrLinkException if no user database credentials where found for the selected user or some connection error occoured while connection to the user database
      * @return void                    No value is returned
      */
-    private function _connect_usr_db() {
+    private function _connect_usr_db():void {
         try {
             self::$_instance_sys_link->run_query("SELECT `db_host`, `db_port`, `db_username`, `db_password`, `db_name` FROM `databases` WHERE `user_id`=? LIMIT 1", "i", $this->_mode);
 
@@ -164,7 +164,7 @@ class db {
      * @throws                         DbUsrLinkException if mode selector is not equal to -1
      * @return bool                    Returns true on success or false on failure.
      */
-    public function run_query(string $query, string|null $types = null, mixed $var = null, mixed ...$vars) {
+    public function run_query(string $query, string|null $types = null, mixed $var = null, mixed ...$vars):bool {
         try {
             $this->_stmt->prepare($query);
             if (!empty($types)) {
@@ -190,9 +190,9 @@ class db {
     /**
      * Gets the number of rows in a result.
      * 
-     * @return integer                 Number of rows in the result set.
+     * @return int                     Number of rows in the result set.
      */
-    public function num_rows() {
+    public function num_rows():int {
         return $this->_result->num_rows;
     }
 
@@ -200,9 +200,9 @@ class db {
      * Gets the number of rows in a table without any filter applied.
      * 
      * @param string   $table          Table name.
-     * @return integer                 Number of rows in the table.
+     * @return int                     Number of rows in the table.
      */
-    public function num_rows_all(string $table) {
+    public function num_rows_all(string $table):int {
         $query = "SELECT COUNT(*) as `count` FROM `" . $table . "`";
         if ($this->_mode == -1) {
             self::$_instance_sys_link->run_query($query);
@@ -220,7 +220,7 @@ class db {
      * 
      * @return array                   Result of all rows as array.
      */
-    public function fetch_array() {
+    public function fetch_array():array {
         return $this->_result->fetch_all(MYSQLI_ASSOC);
     }
 
@@ -230,7 +230,7 @@ class db {
      * @param int      $offset         Adjusts the result pointer to the given offset and return one result row as array
      * @return array                   Returns an array representing the fetched row or empty array if there are no more rows in the result or on failure.
      */
-    public function fetch_one(int $offset = 0) {
+    public function fetch_one(int $offset = 0):array {
         if ($this->num_rows() < 1) {
             return array();
         }

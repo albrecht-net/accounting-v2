@@ -20,13 +20,13 @@ if (!empty(config::get('log.level'))) {
  * Function error handler
  * Format errors with a sverity of 'E_USER_ERROR', 'E_USER_WARNING' and 'E_USER_NOTICE'
  * 
- * @param int $errno contains the level of the error raised, as an integer.
- * @param string $errstr contains the error message, as a string.
- * @param string $errfile contains the filename that the error was raised in, as a string.
- * @param int $errline contains the line number the error was raised at, as an integer.
- * @return bool Return false if error code is not included in error_reporting, so it use the standard PHP error handler. For other error codes return true.
+ * @param int          $errno          Contains the level of the error raised, as an int.
+ * @param string       $errstr         Contains the error message, as a string.
+ * @param string       $errfile        Contains the filename that the error was raised in, as a string.
+ * @param int          $errline        Contains the line number the error was raised at, as an int.
+ * @return bool                        Return false if error code is not included in error_reporting, so it use the standard PHP error handler. For other error codes return true.
  */
-function app_error_handler($errno, $errstr, $errfile, $errline) {
+function app_error_handler($errno, $errstr, $errfile, $errline):bool {
     if (!(error_reporting() & $errno)) {
         return false;
     }

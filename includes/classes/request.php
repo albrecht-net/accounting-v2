@@ -48,14 +48,14 @@ class request {
      * @param string   $name           Name of a value in the query string
      * @param bool     $required       Throws a exception if set to true, but no value was found in the query.
      * @param bool     $trim           Optional. Strip whitespace from the beginning and end before return query value.
-     * @param integer  $filter         Optional. The ID of the filter to apply before return value. If omitted, FILTER_DEFAULT will be used,
+     * @param int      $filter         Optional. The ID of the filter to apply before return value. If omitted, FILTER_DEFAULT will be used,
      *                                 which is equivalent to FILTER_UNSAFE_RAW.
-     * @param array    $options       Optional. Associative array of options or bitwise disjunction of flags.
+     * @param array    $options        Optional. Associative array of options or bitwise disjunction of flags.
      *                                 The default value provided in ['options']['default'] will not overwrite the value if the filter fails.
      * @throws                         RequestException if the query parameter with $name is required but was not found.
-     * @return mixed|void              Query string value, or void if name not found.
+     * @return mixed                   Query string value.
      */
-    public static function query_str(string $name, bool $required, bool $trim = true, int $filter = FILTER_DEFAULT, array $options = array()) {
+    public static function query_str(string $name, bool $required, bool $trim = true, int $filter = FILTER_DEFAULT, array $options = array()):mixed {
         if (count(self::$_query_str) == 0) {
             self::load_query_str();
         }
@@ -110,14 +110,14 @@ class request {
      * @param string   $name           Name of a value in the request body
      * @param bool     $required       Throws a exception if set to true, but no value was found in the query.
      * @param bool     $trim           Optional. Strip whitespace from the beginning and end before return query value.
-     * @param integer  $filter         Optional. The ID of the filter to apply before return value. If omitted, FILTER_DEFAULT will be used,
+     * @param int      $filter         Optional. The ID of the filter to apply before return value. If omitted, FILTER_DEFAULT will be used,
      *                                 which is equivalent to FILTER_UNSAFE_RAW.
-     * @param array    $options       Optional. Associative array of options or bitwise disjunction of flags.
+     * @param array    $options        Optional. Associative array of options or bitwise disjunction of flags.
      *                                 The default value provided in ['options']['default'] will not overwrite the value if the filter fails.
      * @throws                         RequestException if the query parameter with $name is required but was not found.
-     * @return mixed|void              Request body value, or void if name not found.
+     * @return mixed                   Request body value, or void if name not found.
      */
-    public static function body(string $name, bool $required, bool $trim = true, int $filter = FILTER_DEFAULT, array $options = array()) {
+    public static function body(string $name, bool $required, bool $trim = true, int $filter = FILTER_DEFAULT, array $options = array()):mixed {
         if (count(self::$_body) == 0) {
             self::load_body();
         }

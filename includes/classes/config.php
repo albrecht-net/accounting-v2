@@ -1,16 +1,16 @@
 <?php
 class config {
     /**
-     * @var array $_config Contains array from config file after load.
+     * @var array      $_config        Contains array from config file after load.
      */
     private static $_config = null;
 
     /**
      * Load config.php file
      * 
-     * @return void Retrun void if including of config.php was successful otherwise output a http error 500.
+     * @return void                    Retrun void if including of config.php was successful otherwise output a http error 500.
      */
-    private static function load() {
+    private static function load():void {
         self::$_config = include_once ROOT_PATH . 'conf' . DIRECTORY_SEPARATOR . 'config.php';
 
         // If config.php cannot get included
@@ -24,10 +24,10 @@ class config {
     /**
      * Get config value
      * 
-     * @param string $name Must be a name of a config array key.
-     * @return mixed|void Configuration value, or void if name not found.
+     * @param string   $name           Must be a name of a config array key.
+     * @return mixed                   Configuration value, or null if name not found.
      */
-    public static function get(string|null $name = null) {
+    public static function get(string|null $name = null):mixed {
         if ($name != null) {
             if (self::$_config == null) {
                 self::load();
@@ -36,6 +36,6 @@ class config {
             return self::$_config[$name];
         }
 
-        return;
+        return null;
     }
 }
