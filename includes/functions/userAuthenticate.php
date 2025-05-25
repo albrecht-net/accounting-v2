@@ -15,7 +15,7 @@ if (!defined('REQUIRE_AUTH')) {
  * @param string       $sid            Input session id by string. Session id given by this parameter has higher prioity than http header or cookie.
  * @return int                         Return user id to given session, if valid. Otherwise 0.
  */
-function userAuthenticate(string $sid = null):int {
+function userAuthenticate(string|null $sid = null):int {
     // Set session id
     if (($sid == null) && !empty($_SERVER['HTTP_AUTHORIZATION'])) {
         if (substr($_SERVER['HTTP_AUTHORIZATION'], 0, 7) !== "Bearer ") {

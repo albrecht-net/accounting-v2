@@ -55,7 +55,7 @@ class request {
      * @throws                         RequestException if the query parameter with $name is required but was not found.
      * @return mixed|void              Query string value, or void if name not found.
      */
-    public static function query_str($name, $required, $trim = true, $filter = FILTER_DEFAULT, $options = array()) {
+    public static function query_str(string $name, bool $required, bool $trim = true, int $filter = FILTER_DEFAULT, array $options = array()) {
         if (count(self::$_query_str) == 0) {
             self::load_query_str();
         }
@@ -117,7 +117,7 @@ class request {
      * @throws                         RequestException if the query parameter with $name is required but was not found.
      * @return mixed|void              Request body value, or void if name not found.
      */
-    public static function body($name, $required, $trim = true, $filter = FILTER_DEFAULT, $options = array()) {
+    public static function body(string $name, bool $required, bool $trim = true, int $filter = FILTER_DEFAULT, array $options = array()) {
         if (count(self::$_body) == 0) {
             self::load_body();
         }

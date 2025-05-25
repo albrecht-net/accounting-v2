@@ -4,14 +4,14 @@ $driver = new mysqli_driver();
 $driver->report_mode = MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT;
 
 class DbSysLinkException extends RuntimeException {
-    public function __construct(string $message = "", int $code = 0, ?Throwable $previous = null) {
+    public function __construct(string $message = "", int $code = 0, throwable|null $previous = null) {
         trigger_error("SystemDatabaseException #" . $code . " - " . $message, E_USER_ERROR);
         parent::__construct($message, $code, $previous);
     }
 }
 
 class DbUsrLinkException extends RuntimeException {
-    public function __construct(string $message = "", int $code = 0, ?Throwable $previous = null) {
+    public function __construct(string $message = "", int $code = 0, throwable|null $previous = null) {
         trigger_error("JournalDatabaseException #" . $code . " - UID: "  . USER_ID . " - " . $message, E_USER_NOTICE);
         parent::__construct($message, $code, $previous);
     }}
@@ -164,7 +164,7 @@ class db {
      * @throws                         DbUsrLinkException if mode selector is not equal to -1
      * @return bool                    Returns true on success or false on failure.
      */
-    public function run_query(string $query, string $types = null, $var = null, ...$vars) {
+    public function run_query(string $query, string|null $types = null, mixed $var = null, mixed ...$vars) {
         try {
             $this->_stmt->prepare($query);
             if (!empty($types)) {

@@ -27,7 +27,7 @@ class config {
      * @param string $name Must be a name of a config array key.
      * @return mixed|void Configuration value, or void if name not found.
      */
-    public static function get($name = null) {
+    public static function get(string|null $name = null) {
         if ($name != null) {
             if (self::$_config == null) {
                 self::load();
